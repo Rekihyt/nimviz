@@ -16,7 +16,7 @@ var
   gvc = gvContext()
   node = graph.agnode("node1", 1)
 
-let f = open("/home/hugh/GitRepos/nimviz/graphs/index.gv")
+let f = open("graph.gv")
 var g = agread(f, nil);
 
 echo gvLayout(gvc, graph, "dot")
