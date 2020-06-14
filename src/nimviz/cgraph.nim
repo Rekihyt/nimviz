@@ -157,7 +157,7 @@ type
     open* {.importc: "open".}: proc (g: ptr AGraphT; a2: ptr AgDiscT): pointer ##  object ID allocator
     ##  associated with a graph
     map* {.importc: "map".}: proc (state: pointer; objtype: cint; str: cstring;
-                               id: ptr IdType; createflag: cint): clong
+                               id: ptr IdType; createflag: bool): clong
     alloc* {.importc: "alloc".}: proc (state: pointer; objtype: cint; id: IdType): clong
     free* {.importc: "free".}: proc (state: pointer; objtype: cint; id: IdType)
     print* {.importc: "print".}: proc (state: pointer; objtype: cint; id: IdType): cstring
@@ -293,11 +293,11 @@ proc agIsStrict*(g: ptr AGraphT): cint {.importc: "agisstrict", dynlib: cgraphDl
 proc agIsSimple*(g: ptr AGraphT): cint {.importc: "agissimple", dynlib: cgraphDll.}
 ##  nodes
 
-proc agNode*(g: ptr AGraphT; name: cstring; createflag: cint): ptr AgNodeT {.
+proc agNode*(g: ptr AGraphT; name: cstring; createflag: bool): ptr AgNodeT {.
     importc: "agnode", dynlib: cgraphDll.}
-proc agIdNode*(g: ptr AGraphT; id: IdType; createflag: cint): ptr AgNodeT {.
+proc agIdNode*(g: ptr AGraphT; id: IdType; createflag: bool): ptr AgNodeT {.
     importc: "agidnode", dynlib: cgraphDll.}
-proc agSubNode*(g: ptr AGraphT; n: ptr AgNodeT; createflag: cint): ptr AgNodeT {.
+proc agSubNode*(g: ptr AGraphT; n: ptr AgNodeT; createflag: bool): ptr AgNodeT {.
     importc: "agsubnode", dynlib: cgraphDll.}
 proc agFstNode*(g: ptr AGraphT): ptr AgNodeT {.importc: "agfstnode",
     dynlib: cgraphDll.}
@@ -316,11 +316,11 @@ proc agNodeBefore*(u: ptr AgNodeT; v: ptr AgNodeT): cint {.importc: "agnodebefor
 ##  edges
 
 proc agEdge*(g: ptr AGraphT; t: ptr AgNodeT; h: ptr AgNodeT; name: cstring;
-            createflag: cint): ptr AgEdgeT {.importc: "agedge", dynlib: cgraphDll.}
+            createflag: bool): ptr AgEdgeT {.importc: "agedge", dynlib: cgraphDll.}
 proc agIdEdge*(g: ptr AGraphT; t: ptr AgNodeT; h: ptr AgNodeT; id: IdType;
-              createflag: cint): ptr AgEdgeT {.importc: "agidedge",
+              createflag: bool): ptr AgEdgeT {.importc: "agidedge",
     dynlib: cgraphDll.}
-proc agSubEdge*(g: ptr AGraphT; e: ptr AgEdgeT; createflag: cint): ptr AgEdgeT {.
+proc agSubEdge*(g: ptr AGraphT; e: ptr AgEdgeT; createflag: bool): ptr AgEdgeT {.
     importc: "agsubedge", dynlib: cgraphDll.}
 proc agFstIn*(g: ptr AGraphT; n: ptr AgNodeT): ptr AgEdgeT {.importc: "agfstin",
     dynlib: cgraphDll.}
@@ -406,11 +406,11 @@ proc agSafeSet*(obj: pointer; name: cstring; value: cstring; def: cstring): cint
     importc: "agsafeset", dynlib: cgraphDll.}
 ##  defintions for subgraphs
 
-proc agSubG*(g: ptr AGraphT; name: cstring; cflag: cint): ptr AGraphT {.
+proc agSubG*(g: ptr AGraphT; name: cstring; cflag: bool): ptr AGraphT {.
     importc: "agsubg", dynlib: cgraphDll.}
 ##  constructor
 
-proc agIdSubG*(g: ptr AGraphT; id: IdType; cflag: cint): ptr AGraphT {.
+proc agIdSubG*(g: ptr AGraphT; id: IdType; cflag: bool): ptr AGraphT {.
     importc: "agidsubg", dynlib: cgraphDll.}
 ##  constructor
 
