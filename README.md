@@ -19,10 +19,10 @@ import nimviz
 var
   graph = agOpen("G", agDirected, nil)
   context = gvContext()
-  node1 = graph.agNode("node1", true)
-  node2 = graph.agNode("node2", true)
+  node1 = graph.agNode("node1")
+  node2 = graph.agNode("node2")
   # Create an edge
-  edge1 = graph.agEdge(node1, node2, "edge1", true)
+  edge1 = graph.agEdge(node1, node2, "edge1")
 
 # Set an attribute
 discard agSafeSet(node2, "color", "green", "")
