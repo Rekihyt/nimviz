@@ -42,7 +42,7 @@ import gvcext
   #   name* {.importc: "name".}: cstring
   #   address* {.importc: "address".}: pointer
 
-template LAYOUT_DONE*(g: untyped): untyped =
+template layoutDone*(g: untyped): untyped =
   agbindrec(g, "Agraphinfo_t", 0, TRUE) and GD_drawing(g)
 
 ##  misc
@@ -51,70 +51,70 @@ template LAYOUT_DONE*(g: untyped): untyped =
 proc gvToggle*(a1: cint) {.importc: "gvToggle", dynlib: gvcDll.}
 ##  set up a graphviz context
 
-proc gvNEWcontext*(builtins: ptr LtSymlistT; demand_loading: cint): ptr GVC_t {.
+proc gvNewContext*(builtins: ptr LtSymlistT; demand_loading: cint): ptr GVCT {.
     importc: "gvNEWcontext", dynlib: gvcDll.}
 ##   set up a graphviz context - and init graph - retaining old API
 
-proc gvContext*(): ptr GVC_t {.importc: "gvContext", dynlib: gvcDll.}
+proc gvContext*(): ptr GVCT {.importc: "gvContext", dynlib: gvcDll.}
 ##   set up a graphviz context - and init graph - with builtins
 
-proc gvContextPlugins*(builtins: ptr LtSymlistT; demand_loading: cint): ptr GVC_t {.
+proc gvContextPlugins*(builtins: ptr LtSymlistT; demand_loading: cint): ptr GVCT {.
     importc: "gvContextPlugins", dynlib: gvcDll.}
 ##  get information associated with a graphviz context
 
-proc gvcInfo*(a1: ptr GVC_t): cstringArray {.importc: "gvcInfo", dynlib: gvcDll.}
-proc gvcVersion*(a1: ptr GVC_t): cstring {.importc: "gvcVersion", dynlib: gvcDll.}
-proc gvcBuildDate*(a1: ptr GVC_t): cstring {.importc: "gvcBuildDate", dynlib: gvcDll.}
+proc gvcInfo*(a1: ptr GVCT): cstringArray {.importc: "gvcInfo", dynlib: gvcDll.}
+proc gvcVersion*(a1: ptr GVCT): cstring {.importc: "gvcVersion", dynlib: gvcDll.}
+proc gvcBuildDate*(a1: ptr GVCT): cstring {.importc: "gvcBuildDate", dynlib: gvcDll.}
 ##  parse command line args - minimally argv[0] sets layout engine
 
-proc gvParseArgs*(gvc: ptr GVC_t; argc: cint; argv: cstringArray): cint {.
+proc gvParseArgs*(gvc: ptr GVCT; argc: cint; argv: cstringArray): cint {.
     importc: "gvParseArgs", dynlib: gvcDll.}
-proc gvNextInputGraph*(gvc: ptr GVC_t): ptr graph_t {.importc: "gvNextInputGraph",
+proc gvNextInputGraph*(gvc: ptr GVCT): ptr GraphT {.importc: "gvNextInputGraph",
     dynlib: gvcDll.}
-proc gvPluginsGraph*(gvc: ptr GVC_t): ptr graph_t {.importc: "gvPluginsGraph",
+proc gvPluginsGraph*(gvc: ptr GVCT): ptr GraphT {.importc: "gvPluginsGraph",
     dynlib: gvcDll.}
 ##  Compute a layout using a specified engine
 
-proc gvLayout*(gvc: ptr GVC_t; g: ptr graph_t; engine: cstring): cint {.
+proc gvLayout*(gvc: ptr GVCT; g: ptr GraphT; engine: cstring): cint {.
     importc: "gvLayout", dynlib: gvcDll.}
 ##  Compute a layout using layout engine from command line args
 
-proc gvLayoutJobs*(gvc: ptr GVC_t; g: ptr graph_t): cint {.importc: "gvLayoutJobs",
+proc gvLayoutJobs*(gvc: ptr GVCT; g: ptr GraphT): cint {.importc: "gvLayoutJobs",
     dynlib: gvcDll.}
 ##  Render layout into string attributes of the graph
 
-proc attach_attrs*(g: ptr graph_t) {.importc: "attach_attrs", dynlib: gvcDll.}
+proc attachAttrs*(g: ptr GraphT) {.importc: "attach_attrs", dynlib: gvcDll.}
 ##  Render layout in a specified format to an open FILE
 
-proc gvRender*(gvc: ptr GVC_t; g: ptr graph_t; format: cstring; `out`: ptr File): cint {.
+proc gvRender*(gvc: ptr GVCT; g: ptr GraphT; format: cstring; `out`: ptr File): cint {.
     importc: "gvRender", dynlib: gvcDll.}
 ##  Render layout in a specified format to a file with the given name
 
-proc gvRenderFilename*(gvc: ptr GVC_t; g: ptr graph_t; format: cstring; filename: cstring): cint {.
+proc gvRenderFilename*(gvc: ptr GVCT; g: ptr GraphT; format: cstring; filename: cstring): cint {.
     importc: "gvRenderFilename", dynlib: gvcDll.}
 ##  Render layout in a specified format to an external context
 
-proc gvRenderContext*(gvc: ptr GVC_t; g: ptr graph_t; format: cstring; context: pointer): cint {.
+proc gvRenderContext*(gvc: ptr GVCT; g: ptr GraphT; format: cstring; context: pointer): cint {.
     importc: "gvRenderContext", dynlib: gvcDll.}
 ##  Render layout in a specified format to a malloc'ed string
 
-proc gvRenderData*(gvc: ptr GVC_t; g: ptr graph_t; format: cstring; result: cstringArray;
+proc gvRenderData*(gvc: ptr GVCT; g: ptr GraphT; format: cstring; result: cstringArray;
                   length: ptr cuint): cint {.importc: "gvRenderData", dynlib: gvcDll.}
 ##  Free memory allocated and pointed to by *result in gvRenderData
 
 proc gvFreeRenderData*(data: cstring) {.importc: "gvFreeRenderData", dynlib: gvcDll.}
 ##  Render layout according to -T and -o options found by gvParseArgs
 
-proc gvRenderJobs*(gvc: ptr GVC_t; g: ptr graph_t): cint {.importc: "gvRenderJobs",
+proc gvRenderJobs*(gvc: ptr GVCT; g: ptr GraphT): cint {.importc: "gvRenderJobs",
     dynlib: gvcDll.}
 ##  Clean up layout data structures - layouts are not nestable (yet)
 
-proc gvFreeLayout*(gvc: ptr GVC_t; g: ptr graph_t): cint {.importc: "gvFreeLayout",
+proc gvFreeLayout*(gvc: ptr GVCT; g: ptr GraphT): cint {.importc: "gvFreeLayout",
     dynlib: gvcDll.}
 ##  Clean up graphviz context
 
-proc gvFinalize*(gvc: ptr GVC_t) {.importc: "gvFinalize", dynlib: gvcDll.}
-proc gvFreeContext*(gvc: ptr GVC_t): cint {.importc: "gvFreeContext", dynlib: gvcDll.}
+proc gvFinalize*(gvc: ptr GVCT) {.importc: "gvFinalize", dynlib: gvcDll.}
+proc gvFreeContext*(gvc: ptr GVCT): cint {.importc: "gvFreeContext", dynlib: gvcDll.}
 ##  Return list of plugins of type kind.
 ##  kind would normally be "render" "layout" "textlayout" "device" "loadimage"
 ##  The size of the list is stored in sz.
@@ -127,17 +127,17 @@ proc gvFreeContext*(gvc: ptr GVC_t): cint {.importc: "gvFreeContext", dynlib: gv
 ##  the search as in gvplugin_list above.
 ##
 
-# proc gvPluginList*(gvc: ptr GVC_t; kind: cstring; sz: ptr cint; a4: cstring): cstringArray {.
+# proc gvPluginList*(gvc: ptr GVCT; kind: cstring; sz: ptr cint; a4: cstring): cstringArray {.
     # importc: "gvPluginList", dynlib: gvcDll.}
 ## * Add a library from your user application
 ##  @param gvc Graphviz context to add library to
 ##  @param lib library to add
 ##
 
-# proc gvAddLibrary*(gvc: ptr GVC_t; lib: ptr gvplugin_library_t) {.
+# proc gvAddLibrary*(gvc: ptr GVCT; lib: ptr gvplugin_library_t) {.
     # importc: "gvAddLibrary", dynlib: gvcDll.}
 ## * Perform a Transitive Reduction on a graph
 ##  @param g  graph to be transformed.
 ##
 
-# proc gvToolTred*(g: ptr graph_t): cint {.importc: "gvToolTred", header: "graphviz/gvc.h".}
+# proc gvToolTred*(g: ptr GraphT): cint {.importc: "gvToolTred", header: "graphviz/gvc.h".}

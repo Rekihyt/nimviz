@@ -28,10 +28,10 @@ when not defined(NIL):
   template NIL*(`type`: untyped): untyped =
     (cast[`type`](0))
 
-##  #define NILgraph		NIL(Agraph_t*)
-##  #define NILnode			NIL(Agnode_t*)
-##  #define NILedge			NIL(Agedge_t*)
-##  #define NILsym			NIL(Agsym_t*)
+##  #define NILgraph		NIL(AGraphT*)
+##  #define NILnode			NIL(AgNodeT*)
+##  #define NILedge			NIL(AgEdgeT*)
+##  #define NILsym			NIL(AgSymT*)
 
 type
   IdType* = cuint
@@ -46,9 +46,9 @@ type
 ## be written so only one such lock is outstanding at a time.
 
 type
-  Agrec_t* {.importc: "Agrec_t", header: "graphviz/cgraph.h", bycopy.} = object
+  AgrecT* {.importc: "Agrec_t", header: "graphviz/cgraph.h", bycopy.} = object
     name* {.importc: "name".}: cstring
-    next* {.importc: "next".}: ptr Agrec_t ##  following this would be any programmer-defined data
+    next* {.importc: "next".}: ptr AgrecT ##  following this would be any programmer-defined data
 
 
 ##  Object tag for graphs, nodes, and edges.  While there may be several structs
@@ -56,10 +56,10 @@ type
 ##  const int sizeofseq1 = sizeof(unsigned) * 8 - 4;
 
 type
-  Agtag_t* {.importc: "Agtag_t", header: "graphviz/cgraph.h", bycopy.} = object
-    objtype* {.importc: "objtype", bitsize: 2.}: cuint ##  see literal tags below
-    mtflock* {.importc: "mtflock", bitsize: 1.}: cuint ##  move-to-front lock, see above
-    attrwf* {.importc: "attrwf", bitsize: 1.}: cuint ##  attrs written (parity, write.c)
+  AgtagT* {.importc: "Agtag_t", header: "graphviz/cgraph.h", bycopy.} = object
+    objType* {.importc: "objtype", bitsize: 2.}: cuint ##  see literal tags below
+    mtFlock* {.importc: "mtflock", bitsize: 1.}: cuint ##  move-to-front lock, see above
+    attrWF* {.importc: "attrwf", bitsize: 1.}: cuint ##  attrs written (parity, write.c)
     seq* {.importc: "seq", bitsize: (sizeof(cuint) * 8 - 4).}: cuint ##  sequence no.
     id* {.importc: "id".}: IdType ##  client  ID
 
@@ -76,16 +76,16 @@ const
 ##  a generic graph/node/edge header
 
 type
-  Agobj_t* {.importc: "Agobj_t", header: "graphviz/cgraph.h", bycopy.} = object
-    tag* {.importc: "tag".}: Agtag_t
-    data* {.importc: "data".}: ptr Agrec_t
+  AgobjT* {.importc: "Agobj_t", header: "graphviz/cgraph.h", bycopy.} = object
+    tag* {.importc: "tag".}: AgtagT
+    data* {.importc: "data".}: ptr AgrecT
 
 
 template AGTAG*(obj: untyped): untyped =
-  ((cast[ptr Agobj_t]((obj))).tag)
+  ((cast[ptr AgobjT]((obj))).tag)
 
 template AGTYPE*(obj: untyped): untyped =
-  (AGTAG(obj).objtype)
+  (AGTAG(obj).objType)
 
 template AGID*(obj: untyped): untyped =
   (AGTAG(obj).id)
@@ -94,10 +94,10 @@ template AGSEQ*(obj: untyped): untyped =
   (AGTAG(obj).seq)
 
 template AGATTRWF*(obj: untyped): untyped =
-  (AGTAG(obj).attrwf)
+  (AGTAG(obj).attrWF)
 
 template AGDATA*(obj: untyped): untyped =
-  ((cast[ptr Agobj_t]((obj))).data)
+  ((cast[ptr AgobjT]((obj))).data)
 
 ##  This is the node struct allocated per graph (or subgraph).  It resides
 ## in the n_dict of the graph.  The node set is maintained by libdict, but
@@ -106,46 +106,46 @@ template AGDATA*(obj: untyped): untyped =
 ## for the name.
 
 type
-  Agsubnode_t* {.importc: "Agsubnode_t", header: "graphviz/cgraph.h", bycopy.} = object
-    seq_link* {.importc: "seq_link".}: Dtlink_t ##  the node-per-graph-or-subgraph record
+  AgSubNodeT* {.importc: "Agsubnode_t", header: "graphviz/cgraph.h", bycopy.} = object
+    seqLink* {.importc: "seq_link".}: DtLinkT ##  the node-per-graph-or-subgraph record
     ##  must be first
-    id_link* {.importc: "id_link".}: Dtlink_t
-    node* {.importc: "node".}: ptr Agnode_t ##  the object
-    in_id* {.importc: "in_id".}: ptr Dtlink_t
-    out_id* {.importc: "out_id".}: ptr Dtlink_t ##  by node/ID for random access
-    in_seq* {.importc: "in_seq".}: ptr Dtlink_t
-    out_seq* {.importc: "out_seq".}: ptr Dtlink_t ##  by node/sequence for serial access
+    idLink* {.importc: "id_link".}: DtLinkT
+    node* {.importc: "node".}: ptr AgNodeT ##  the object
+    inId* {.importc: "in_id".}: ptr DtLinkT
+    outId* {.importc: "out_id".}: ptr DtLinkT ##  by node/ID for random access
+    inSeq* {.importc: "in_seq".}: ptr DtLinkT
+    outSeq* {.importc: "out_seq".}: ptr DtLinkT ##  by node/sequence for serial access
 
-  Agnode_t* {.importc: "Agnode_t", header: "graphviz/cgraph.h", bycopy.} = object
-    base* {.importc: "base".}: Agobj_t
-    root* {.importc: "root".}: ptr Agraph_t
-    mainsub* {.importc: "mainsub".}: Agsubnode_t ##  embedded for main graph
+  AgNodeT* {.importc: "Agnode_t", header: "graphviz/cgraph.h", bycopy.} = object
+    base* {.importc: "base".}: AgobjT
+    root* {.importc: "root".}: ptr AGraphT
+    mainSub* {.importc: "mainsub".}: AgSubNodeT ##  embedded for main graph
 
-  Agedge_t* {.importc: "Agedge_t", header: "graphviz/cgraph.h", bycopy.} = object
-    base* {.importc: "base".}: Agobj_t
-    id_link* {.importc: "id_link".}: Dtlink_t ##  main graph only
-    seq_link* {.importc: "seq_link".}: Dtlink_t
-    node* {.importc: "node".}: ptr Agnode_t ##  the endpoint node
+  AgEdgeT* {.importc: "Agedge_t", header: "graphviz/cgraph.h", bycopy.} = object
+    base* {.importc: "base".}: AgobjT
+    idLink* {.importc: "id_link".}: DtLinkT ##  main graph only
+    seqLink* {.importc: "seq_link".}: DtLinkT
+    node* {.importc: "node".}: ptr AgNodeT ##  the endpoint node
 
-  Agedgepair_t* {.importc: "Agedgepair_t", header: "graphviz/cgraph.h", bycopy.} = object
-    `out`* {.importc: "out".}: Agedge_t
-    `in`* {.importc: "in".}: Agedge_t
+  AgEdgePairT* {.importc: "Agedgepair_t", header: "graphviz/cgraph.h", bycopy.} = object
+    `out`* {.importc: "out".}: AgEdgeT
+    `in`* {.importc: "in".}: AgEdgeT
 
-  Agdesc_t* {.importc: "Agdesc_t", header: "graphviz/cgraph.h", bycopy.} = object
+  AgDescT* {.importc: "Agdesc_t", header: "graphviz/cgraph.h", bycopy.} = object
     directed* {.importc: "directed", bitsize: 1.}: cuint ##  graph descriptor
     ##  if edges are asymmetric
     strict* {.importc: "strict", bitsize: 1.}: cuint ##  if multi-edges forbidden
-    no_loop* {.importc: "no_loop", bitsize: 1.}: cuint ##  if no loops
-    maingraph* {.importc: "maingraph", bitsize: 1.}: cuint ##  if this is the top level graph
-    flatlock* {.importc: "flatlock", bitsize: 1.}: cuint ##  if sets are flattened into lists in cdt
-    no_write* {.importc: "no_write", bitsize: 1.}: cuint ##  if a temporary subgraph
-    has_attrs* {.importc: "has_attrs", bitsize: 1.}: cuint ##  if string attr tables should be initialized
-    has_cmpnd* {.importc: "has_cmpnd", bitsize: 1.}: cuint ##  if may contain collapsed nodes
+    noLoop* {.importc: "no_loop", bitsize: 1.}: cuint ##  if no loops
+    mainGraph* {.importc: "maingraph", bitsize: 1.}: cuint ##  if this is the top level graph
+    flatLock* {.importc: "flatlock", bitsize: 1.}: cuint ##  if sets are flattened into lists in cdt
+    noWrite* {.importc: "no_write", bitsize: 1.}: cuint ##  if a temporary subgraph
+    hasAttrs* {.importc: "has_attrs", bitsize: 1.}: cuint ##  if string attr tables should be initialized
+    hasCmpnd* {.importc: "has_cmpnd", bitsize: 1.}: cuint ##  if may contain collapsed nodes
 
   #  disciplines for external resources needed by libgraph
 
-  Agmemdisc_t* {.importc: "Agmemdisc_t", header: "graphviz/cgraph.h", bycopy.} = object
-    open* {.importc: "open".}: proc (a1: ptr Agdisc_t): pointer ##  memory allocator
+  AgMemDiscT* {.importc: "Agmemdisc_t", header: "graphviz/cgraph.h", bycopy.} = object
+    open* {.importc: "open".}: proc (a1: ptr AgDiscT): pointer ##  memory allocator
     ##  independent of other resources
     alloc* {.importc: "alloc".}: proc (state: pointer; req: csize_t): pointer
     resize* {.importc: "resize".}: proc (state: pointer; `ptr`: pointer; old: csize_t;
@@ -153,8 +153,8 @@ type
     free* {.importc: "free".}: proc (state: pointer; `ptr`: pointer)
     close* {.importc: "close".}: proc (state: pointer)
 
-  Agiddisc_t* {.importc: "Agiddisc_t", header: "graphviz/cgraph.h", bycopy.} = object
-    open* {.importc: "open".}: proc (g: ptr Agraph_t; a2: ptr Agdisc_t): pointer ##  object ID allocator
+  AgIdDiscT* {.importc: "Agiddisc_t", header: "graphviz/cgraph.h", bycopy.} = object
+    open* {.importc: "open".}: proc (g: ptr AGraphT; a2: ptr AgDiscT): pointer ##  object ID allocator
     ##  associated with a graph
     map* {.importc: "map".}: proc (state: pointer; objtype: cint; str: cstring;
                                id: ptr IdType; createflag: cint): clong
@@ -162,19 +162,19 @@ type
     free* {.importc: "free".}: proc (state: pointer; objtype: cint; id: IdType)
     print* {.importc: "print".}: proc (state: pointer; objtype: cint; id: IdType): cstring
     close* {.importc: "close".}: proc (state: pointer)
-    idregister* {.importc: "idregister".}: proc (state: pointer; objtype: cint;
+    idRegister* {.importc: "idregister".}: proc (state: pointer; objtype: cint;
         obj: pointer)
 
-  Agiodisc_t* {.importc: "Agiodisc_t", header: "graphviz/cgraph.h", bycopy.} = object
-    afread* {.importc: "afread".}: proc (chan: pointer; buf: cstring; bufsize: cint): cint
-    putstr* {.importc: "putstr".}: proc (chan: pointer; str: cstring): cint
+  AgIoDiscT* {.importc: "Agiodisc_t", header: "graphviz/cgraph.h", bycopy.} = object
+    afRead* {.importc: "afread".}: proc (chan: pointer; buf: cstring; bufsize: cint): cint
+    putStr* {.importc: "putstr".}: proc (chan: pointer; str: cstring): cint
     flush* {.importc: "flush".}: proc (chan: pointer): cint ##  sync
                                                      ##  error messages?
 
-  Agdisc_t* {.importc: "Agdisc_t", header: "graphviz/cgraph.h", bycopy.} = object
-    mem* {.importc: "mem".}: ptr Agmemdisc_t ##  user's discipline
-    id* {.importc: "id".}: ptr Agiddisc_t
-    io* {.importc: "io".}: ptr Agiodisc_t
+  AgDiscT* {.importc: "Agdisc_t", header: "graphviz/cgraph.h", bycopy.} = object
+    mem* {.importc: "mem".}: ptr AgMemDiscT ##  user's discipline
+    id* {.importc: "id".}: ptr AgIdDiscT
+    io* {.importc: "io".}: ptr AgIoDiscT
 
 
 #  default resource disciplines
@@ -186,290 +186,290 @@ type
 # end visual studio
 
 
-  Agattr_t* {.importc: "Agattr_t", header: "graphviz/cgraph.h", bycopy.} = object
-    h* {.importc: "h".}: Agrec_t ##  dynamic string attributes
+  AgattrT* {.importc: "Agattr_t", header: "graphviz/cgraph.h", bycopy.} = object
+    h* {.importc: "h".}: AgrecT ##  dynamic string attributes
     ##  common data header
-    dict* {.importc: "dict".}: ptr Dict_t ##  shared dict to interpret attr field
+    dict* {.importc: "dict".}: ptr DictT ##  shared dict to interpret attr field
     str* {.importc: "str".}: cstringArray ##  the attribute string values
 
-  Agsym_t* {.importc: "Agsym_t", header: "graphviz/cgraph.h", bycopy.} = object
-    link* {.importc: "link".}: Dtlink_t ##  symbol in one of the above dictionaries
+  AgSymT* {.importc: "Agsym_t", header: "graphviz/cgraph.h", bycopy.} = object
+    link* {.importc: "link".}: DtLinkT ##  symbol in one of the above dictionaries
     name* {.importc: "name".}: cstring ##  attribute's name
-    defval* {.importc: "defval".}: cstring ##  its default value for initialization
+    defVal* {.importc: "defval".}: cstring ##  its default value for initialization
     id* {.importc: "id".}: cint  ##  its index in attr[]
     kind* {.importc: "kind".}: cuchar ##  referent object type
     fixed* {.importc: "fixed".}: cuchar ##  immutable value
     print* {.importc: "print".}: cuchar ##  always print
 
-  INNER_C_tTRUCT_cgraph_335* {.importc: "no_name", header: "graphviz/cgraph.h", bycopy.} = object
-    n* {.importc: "n".}: ptr Dict_t
-    e* {.importc: "e".}: ptr Dict_t
-    g* {.importc: "g".}: ptr Dict_t
+  INNER_CTTRUCT_cgraph_335* {.importc: "no_name", header: "graphviz/cgraph.h", bycopy.} = object
+    n* {.importc: "n".}: ptr DictT
+    e* {.importc: "e".}: ptr DictT
+    g* {.importc: "g".}: ptr DictT
 
-  Agdatadict_t* {.importc: "Agdatadict_t", header: "graphviz/cgraph.h", bycopy.} = object
-    h* {.importc: "h".}: Agrec_t ##  set of dictionaries per graph
+  AgDataDictT* {.importc: "Agdatadict_t", header: "graphviz/cgraph.h", bycopy.} = object
+    h* {.importc: "h".}: AgrecT ##  set of dictionaries per graph
     ##  installed in list of graph recs
-    dict* {.importc: "dict".}: INNER_C_tTRUCT_cgraph_335
+    dict* {.importc: "dict".}: INNER_CTTRUCT_cgraph_335
 
-  Agdstate_t* {.importc: "Agdstate_t", header: "graphviz/cgraph.h", bycopy.} = object
+  AgDStateT* {.importc: "Agdstate_t", header: "graphviz/cgraph.h", bycopy.} = object
     mem* {.importc: "mem".}: pointer
     id* {.importc: "id".}: pointer ##  IO must be initialized and finalized outside Cgraph,
                                ##  and channels (FILES) are passed as void* arguments.
 
-  Agobjfn_t* = proc (g: ptr Agraph_t; obj: ptr Agobj_t; arg: pointer)
-  Agobjupdfn_t* = proc (g: ptr Agraph_t; obj: ptr Agobj_t; arg: pointer; sym: ptr Agsym_t)
-  INNER_C_tTRUCT_cgraph_214* {.importc: "no_name", header: "graphviz/cgraph.h", bycopy.} = object
-    ins* {.importc: "ins".}: Agobjfn_t
-    `mod`* {.importc: "mod".}: Agobjupdfn_t
-    del* {.importc: "del".}: Agobjfn_t
+  AgObjFnT* = proc (g: ptr AGraphT; obj: ptr AgobjT; arg: pointer)
+  AgObjUpdFnT* = proc (g: ptr AGraphT; obj: ptr AgobjT; arg: pointer; sym: ptr AgSymT)
+  INNER_CTTRUCT_cgraph_214* {.importc: "no_name", header: "graphviz/cgraph.h", bycopy.} = object
+    ins* {.importc: "ins".}: AgObjFnT
+    `mod`* {.importc: "mod".}: AgObjUpdFnT
+    del* {.importc: "del".}: AgObjFnT
 
-  Agcbdisc_t* {.importc: "Agcbdisc_t", header: "graphviz/cgraph.h", bycopy.} = object
-    graph* {.importc: "graph".}: INNER_C_tTRUCT_cgraph_214
-    node* {.importc: "node".}: INNER_C_tTRUCT_cgraph_214
-    edge* {.importc: "edge".}: INNER_C_tTRUCT_cgraph_214
+  AgCbDiscT* {.importc: "Agcbdisc_t", header: "graphviz/cgraph.h", bycopy.} = object
+    graph* {.importc: "graph".}: INNER_CTTRUCT_cgraph_214
+    node* {.importc: "node".}: INNER_CTTRUCT_cgraph_214
+    edge* {.importc: "edge".}: INNER_CTTRUCT_cgraph_214
 
-  Agcbstack_t* {.importc: "Agcbstack_t", header: "graphviz/cgraph.h", bycopy.} = object
-    f* {.importc: "f".}: ptr Agcbdisc_t ##  object event callbacks
+  AgCbStackT* {.importc: "Agcbstack_t", header: "graphviz/cgraph.h", bycopy.} = object
+    f* {.importc: "f".}: ptr AgCbDiscT ##  object event callbacks
     ##  methods
     state* {.importc: "state".}: pointer ##  closure
-    prev* {.importc: "prev".}: ptr Agcbstack_t ##  kept in a stack, unlike other disciplines
+    prev* {.importc: "prev".}: ptr AgCbStackT ##  kept in a stack, unlike other disciplines
 
-  Agclos_t* {.importc: "Agclos_t", header: "graphviz/cgraph.h", bycopy.} = object
-    disc* {.importc: "disc".}: Agdisc_t ##  resource discipline functions
-    state* {.importc: "state".}: Agdstate_t ##  resource closures
-    strdict* {.importc: "strdict".}: ptr Dict_t ##  shared string dict
+  AgClosT* {.importc: "Agclos_t", header: "graphviz/cgraph.h", bycopy.} = object
+    disc* {.importc: "disc".}: AgDiscT ##  resource discipline functions
+    state* {.importc: "state".}: AgDStateT ##  resource closures
+    strDict* {.importc: "strdict".}: ptr DictT ##  shared string dict
     seq* {.importc: "seq".}: array[3, uint64] ##  local object sequence number counter
-    cb* {.importc: "cb".}: ptr Agcbstack_t ##  user and system callback function stacks
-    callbacks_enabled* {.importc: "callbacks_enabled".}: cuchar ##  issue user callbacks or hold them?
-    lookup_by_name* {.importc: "lookup_by_name".}: array[3, ptr Dict_t]
-    lookup_by_id* {.importc: "lookup_by_id".}: array[3, ptr Dict_t]
+    cb* {.importc: "cb".}: ptr AgCbStackT ##  user and system callback function stacks
+    callbacksEnabled* {.importc: "callbacks_enabled".}: cuchar ##  issue user callbacks or hold them?
+    lookupByName* {.importc: "lookup_by_name".}: array[3, ptr DictT]
+    lookupById* {.importc: "lookup_by_id".}: array[3, ptr DictT]
 
-  Agraph_t* {.importc: "Agraph_t", header: "graphviz/cgraph.h", bycopy.} = object
-    base* {.importc: "base".}: Agobj_t
-    desc* {.importc: "desc".}: Agdesc_t
-    link* {.importc: "link".}: Dtlink_t
-    n_seq* {.importc: "n_seq".}: ptr Dict_t ##  the node set in sequence
-    n_id* {.importc: "n_id".}: ptr Dict_t ##  the node set indexed by ID
-    e_seq* {.importc: "e_seq".}: ptr Dict_t
-    e_id* {.importc: "e_id".}: ptr Dict_t ##  holders for edge sets
-    g_dict* {.importc: "g_dict".}: ptr Dict_t ##  subgraphs - descendants
-    parent* {.importc: "parent".}: ptr Agraph_t
-    root* {.importc: "root".}: ptr Agraph_t ##  subgraphs - ancestors
-    clos* {.importc: "clos".}: ptr Agclos_t ##  shared resources
+  AGraphT* {.importc: "Agraph_t", header: "graphviz/cgraph.h", bycopy.} = object
+    base* {.importc: "base".}: AgobjT
+    desc* {.importc: "desc".}: AgDescT
+    link* {.importc: "link".}: DtLinkT
+    nSeq* {.importc: "n_seq".}: ptr DictT ##  the node set in sequence
+    nId* {.importc: "n_id".}: ptr DictT ##  the node set indexed by ID
+    eSeq* {.importc: "e_seq".}: ptr DictT
+    eId* {.importc: "e_id".}: ptr DictT ##  holders for edge sets
+    gDict* {.importc: "g_dict".}: ptr DictT ##  subgraphs - descendants
+    parent* {.importc: "parent".}: ptr AGraphT
+    root* {.importc: "root".}: ptr AGraphT ##  subgraphs - ancestors
+    clos* {.importc: "clos".}: ptr AgClosT ##  shared resources
 
 
-var agMemDisc* {.importc: "AgMemDisc", header: "graphviz/cgraph.h".}: Agmemdisc_t
-var agIdDisc* {.importc: "AgIdDisc", header: "graphviz/cgraph.h".}: Agiddisc_t
-var agIoDisc* {.importc: "AgIoDisc", header: "graphviz/cgraph.h".}: Agiodisc_t
-var agDefaultDisc* {.importc: "AgDefaultDisc", header: "graphviz/cgraph.h".}: Agdisc_t
+var agMemDisc* {.importc: "AgMemDisc", header: "graphviz/cgraph.h".}: AgMemDiscT
+var agIdDisc* {.importc: "AgIdDisc", header: "graphviz/cgraph.h".}: AgIdDiscT
+var agIoDisc* {.importc: "AgIoDisc", header: "graphviz/cgraph.h".}: AgIoDiscT
+var agDefaultDisc* {.importc: "AgDefaultDisc", header: "graphviz/cgraph.h".}: AgDiscT
 
 # {.push dynlib: cgraphDll.}
 
-proc agPushDisc*(g: ptr Agraph_t; disc: ptr Agcbdisc_t; state: pointer) {.
+proc agPushDisc*(g: ptr AGraphT; disc: ptr AgCbDiscT; state: pointer) {.
     importc: "agpushdisc", dynlib: cgraphDll.}
-proc agPopDisc*(g: ptr Agraph_t; disc: ptr Agcbdisc_t): cint {.importc: "agpopdisc",
+proc agPopDisc*(g: ptr AGraphT; disc: ptr AgCbDiscT): cint {.importc: "agpopdisc",
     dynlib: cgraphDll.}
-proc agCallBacks*(g: ptr Agraph_t; flag: cint): cint {.importc: "agcallbacks",
+proc agCallBacks*(g: ptr AGraphT; flag: cint): cint {.importc: "agcallbacks",
     dynlib: cgraphDll.}
 ##  return prev value
 ##  graphs
 
-proc agOpen*(name: cstring; desc: Agdesc_t; disc: ptr Agdisc_t): ptr Agraph_t {.
+proc agOpen*(name: cstring; desc: AgDescT; disc: ptr AgDiscT): ptr AGraphT {.
     importc: "agopen", dynlib: cgraphDll.}
-proc agClose*(g: ptr Agraph_t): cint {.importc: "agclose", dynlib: cgraphDll.}
-proc agRead*(chan: pointer; disc: ptr Agdisc_t): ptr Agraph_t {.importc: "agread",
+proc agClose*(g: ptr AGraphT): cint {.importc: "agclose", dynlib: cgraphDll.}
+proc agRead*(chan: pointer; disc: ptr AgDiscT): ptr AGraphT {.importc: "agread",
     dynlib: cgraphDll.}
-proc agMemRead*(cp: cstring): ptr Agraph_t {.importc: "agmemread", dynlib: cgraphDll.}
+proc agMemRead*(cp: cstring): ptr AGraphT {.importc: "agmemread", dynlib: cgraphDll.}
 proc agReadLine*(a1: cint) {.importc: "agreadline", dynlib: cgraphDll.}
 proc agSetFile*(a1: cstring) {.importc: "agsetfile", dynlib: cgraphDll.}
-proc agConcat*(g: ptr Agraph_t; chan: pointer; disc: ptr Agdisc_t): ptr Agraph_t {.
+proc agConcat*(g: ptr AGraphT; chan: pointer; disc: ptr AgDiscT): ptr AGraphT {.
     importc: "agconcat", dynlib: cgraphDll.}
-proc agWrite*(g: ptr Agraph_t; chan: pointer): cint {.importc: "agwrite",
+proc agWrite*(g: ptr AGraphT; chan: pointer): cint {.importc: "agwrite",
     dynlib: cgraphDll.}
-proc agIsDirected*(g: ptr Agraph_t): cint {.importc: "agisdirected", dynlib: cgraphDll.}
-proc agIsUndirected*(g: ptr Agraph_t): cint {.importc: "agisundirected",
+proc agIsDirected*(g: ptr AGraphT): cint {.importc: "agisdirected", dynlib: cgraphDll.}
+proc agIsUndirected*(g: ptr AGraphT): cint {.importc: "agisundirected",
     dynlib: cgraphDll.}
-proc agIsStrict*(g: ptr Agraph_t): cint {.importc: "agisstrict", dynlib: cgraphDll.}
-proc agIsSimple*(g: ptr Agraph_t): cint {.importc: "agissimple", dynlib: cgraphDll.}
+proc agIsStrict*(g: ptr AGraphT): cint {.importc: "agisstrict", dynlib: cgraphDll.}
+proc agIsSimple*(g: ptr AGraphT): cint {.importc: "agissimple", dynlib: cgraphDll.}
 ##  nodes
 
-proc agNode*(g: ptr Agraph_t; name: cstring; createflag: cint): ptr Agnode_t {.
+proc agNode*(g: ptr AGraphT; name: cstring; createflag: cint): ptr AgNodeT {.
     importc: "agnode", dynlib: cgraphDll.}
-proc agIdNode*(g: ptr Agraph_t; id: IdType; createflag: cint): ptr Agnode_t {.
+proc agIdNode*(g: ptr AGraphT; id: IdType; createflag: cint): ptr AgNodeT {.
     importc: "agidnode", dynlib: cgraphDll.}
-proc agSubNode*(g: ptr Agraph_t; n: ptr Agnode_t; createflag: cint): ptr Agnode_t {.
+proc agSubNode*(g: ptr AGraphT; n: ptr AgNodeT; createflag: cint): ptr AgNodeT {.
     importc: "agsubnode", dynlib: cgraphDll.}
-proc agFstNode*(g: ptr Agraph_t): ptr Agnode_t {.importc: "agfstnode",
+proc agFstNode*(g: ptr AGraphT): ptr AgNodeT {.importc: "agfstnode",
     dynlib: cgraphDll.}
-proc agNxtNode*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agnode_t {.importc: "agnxtnode",
+proc agNxtNode*(g: ptr AGraphT; n: ptr AgNodeT): ptr AgNodeT {.importc: "agnxtnode",
     dynlib: cgraphDll.}
-proc agLstNode*(g: ptr Agraph_t): ptr Agnode_t {.importc: "aglstnode",
+proc agLstNode*(g: ptr AGraphT): ptr AgNodeT {.importc: "aglstnode",
     dynlib: cgraphDll.}
-proc agPvNode*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agnode_t {.importc: "agprvnode",
+proc agPvNode*(g: ptr AGraphT; n: ptr AgNodeT): ptr AgNodeT {.importc: "agprvnode",
     dynlib: cgraphDll.}
-proc agSubRep*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agsubnode_t {.importc: "agsubrep",
+proc agSubRep*(g: ptr AGraphT; n: ptr AgNodeT): ptr AgSubNodeT {.importc: "agsubrep",
     dynlib: cgraphDll.}
-proc agNodeBefore*(u: ptr Agnode_t; v: ptr Agnode_t): cint {.importc: "agnodebefore",
+proc agNodeBefore*(u: ptr AgNodeT; v: ptr AgNodeT): cint {.importc: "agnodebefore",
     dynlib: cgraphDll.}
 ##  we have no shame
 ##  and neither do we
 ##  edges
 
-proc agEdge*(g: ptr Agraph_t; t: ptr Agnode_t; h: ptr Agnode_t; name: cstring;
-            createflag: cint): ptr Agedge_t {.importc: "agedge", dynlib: cgraphDll.}
-proc agIdEdge*(g: ptr Agraph_t; t: ptr Agnode_t; h: ptr Agnode_t; id: IdType;
-              createflag: cint): ptr Agedge_t {.importc: "agidedge",
+proc agEdge*(g: ptr AGraphT; t: ptr AgNodeT; h: ptr AgNodeT; name: cstring;
+            createflag: cint): ptr AgEdgeT {.importc: "agedge", dynlib: cgraphDll.}
+proc agIdEdge*(g: ptr AGraphT; t: ptr AgNodeT; h: ptr AgNodeT; id: IdType;
+              createflag: cint): ptr AgEdgeT {.importc: "agidedge",
     dynlib: cgraphDll.}
-proc agSubEdge*(g: ptr Agraph_t; e: ptr Agedge_t; createflag: cint): ptr Agedge_t {.
+proc agSubEdge*(g: ptr AGraphT; e: ptr AgEdgeT; createflag: cint): ptr AgEdgeT {.
     importc: "agsubedge", dynlib: cgraphDll.}
-proc agFstIn*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstin",
+proc agFstIn*(g: ptr AGraphT; n: ptr AgNodeT): ptr AgEdgeT {.importc: "agfstin",
     dynlib: cgraphDll.}
-proc agNxtIn*(g: ptr Agraph_t; e: ptr Agedge_t): ptr Agedge_t {.importc: "agnxtin",
+proc agNxtIn*(g: ptr AGraphT; e: ptr AgEdgeT): ptr AgEdgeT {.importc: "agnxtin",
     dynlib: cgraphDll.}
-proc agFstOut*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstout",
+proc agFstOut*(g: ptr AGraphT; n: ptr AgNodeT): ptr AgEdgeT {.importc: "agfstout",
     dynlib: cgraphDll.}
-proc agNxtOut*(g: ptr Agraph_t; e: ptr Agedge_t): ptr Agedge_t {.importc: "agnxtout",
+proc agNxtOut*(g: ptr AGraphT; e: ptr AgEdgeT): ptr AgEdgeT {.importc: "agnxtout",
     dynlib: cgraphDll.}
-proc agFstEdge*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstedge",
+proc agFstEdge*(g: ptr AGraphT; n: ptr AgNodeT): ptr AgEdgeT {.importc: "agfstedge",
     dynlib: cgraphDll.}
-proc agNxtEdge*(g: ptr Agraph_t; e: ptr Agedge_t; n: ptr Agnode_t): ptr Agedge_t {.
+proc agNxtEdge*(g: ptr AGraphT; e: ptr AgEdgeT; n: ptr AgNodeT): ptr AgEdgeT {.
     importc: "agnxtedge", dynlib: cgraphDll.}
 ##  generic
 
-proc agraphOf*(obj: pointer): ptr Agraph_t {.importc: "agraphof", dynlib: cgraphDll.}
-proc agRoot*(obj: pointer): ptr Agraph_t {.importc: "agroot", dynlib: cgraphDll.}
-proc agContains*(a1: ptr Agraph_t; a2: pointer): cint {.importc: "agcontains",
+proc aGraphOf*(obj: pointer): ptr AGraphT {.importc: "agraphof", dynlib: cgraphDll.}
+proc agRoot*(obj: pointer): ptr AGraphT {.importc: "agroot", dynlib: cgraphDll.}
+proc agContains*(a1: ptr AGraphT; a2: pointer): cint {.importc: "agcontains",
     dynlib: cgraphDll.}
 proc agNameOf*(a1: pointer): cstring {.importc: "agnameof", dynlib: cgraphDll.}
 proc agRelabel*(obj: pointer; name: cstring): cint {.importc: "agrelabel",
     dynlib: cgraphDll.}
 ##  scary
 
-proc agRelabel_node*(n: ptr Agnode_t; newname: cstring): cint {.
+proc agRelabelNode*(n: ptr AgNodeT; newname: cstring): cint {.
     importc: "agrelabel_node", dynlib: cgraphDll.}
-proc agDelete*(g: ptr Agraph_t; obj: pointer): cint {.importc: "agdelete",
+proc agDelete*(g: ptr AGraphT; obj: pointer): cint {.importc: "agdelete",
     dynlib: cgraphDll.}
-proc agDelSubG*(g: ptr Agraph_t; sub: ptr Agraph_t): clong {.importc: "agdelsubg",
+proc agDelSubG*(g: ptr AGraphT; sub: ptr AGraphT): clong {.importc: "agdelsubg",
     dynlib: cgraphDll.}
 ##  could be agclose
 
-proc agDelNode*(g: ptr Agraph_t; arg_n: ptr Agnode_t): cint {.importc: "agdelnode",
+proc agDelNode*(g: ptr AGraphT; arg_n: ptr AgNodeT): cint {.importc: "agdelnode",
     dynlib: cgraphDll.}
-proc agDelEdge*(g: ptr Agraph_t; arg_e: ptr Agedge_t): cint {.importc: "agdeledge",
+proc agDelEdge*(g: ptr AGraphT; arg_e: ptr AgEdgeT): cint {.importc: "agdeledge",
     dynlib: cgraphDll.}
 proc agObjKind*(a1: pointer): cint {.importc: "agobjkind", dynlib: cgraphDll.}
 ##  strings
 
-proc agstrdup*(a1: ptr Agraph_t; a2: cstring): cstring {.importc: "agstrdup",
+proc agStrDup*(a1: ptr AGraphT; a2: cstring): cstring {.importc: "agstrdup",
     dynlib: cgraphDll.}
-proc agstrdup_html*(a1: ptr Agraph_t; a2: cstring): cstring {.importc: "agstrdup_html",
+proc agStrDupHtml*(a1: ptr AGraphT; a2: cstring): cstring {.importc: "agstrdup_html",
     dynlib: cgraphDll.}
-proc aghtmlstr*(a1: cstring): cint {.importc: "aghtmlstr", dynlib: cgraphDll.}
-proc agstrbind*(g: ptr Agraph_t; a2: cstring): cstring {.importc: "agstrbind",
+proc agHtmlStr*(a1: cstring): cint {.importc: "aghtmlstr", dynlib: cgraphDll.}
+proc agStrBind*(g: ptr AGraphT; a2: cstring): cstring {.importc: "agstrbind",
     dynlib: cgraphDll.}
-proc agstrfree*(a1: ptr Agraph_t; a2: cstring): cint {.importc: "agstrfree",
+proc agStrFree*(a1: ptr AGraphT; a2: cstring): cint {.importc: "agstrfree",
     dynlib: cgraphDll.}
-proc agcanon*(a1: cstring; a2: cint): cstring {.importc: "agcanon", dynlib: cgraphDll.}
-proc agstrcanon*(a1: cstring; a2: cstring): cstring {.importc: "agstrcanon",
+proc agCanon*(a1: cstring; a2: cint): cstring {.importc: "agcanon", dynlib: cgraphDll.}
+proc agStrCanon*(a1: cstring; a2: cstring): cstring {.importc: "agstrcanon",
     dynlib: cgraphDll.}
-proc agcanonStr*(str: cstring): cstring {.importc: "agcanonStr", dynlib: cgraphDll.}
+proc agCanonStr*(str: cstring): cstring {.importc: "agcanonStr", dynlib: cgraphDll.}
 ##  manages its own buf
 ##  definitions for dynamic string attributes
 
 
-proc agattr*(g: ptr Agraph_t; kind: cint; name: cstring; value: cstring): ptr Agsym_t {.
+proc agAttr*(g: ptr AGraphT; kind: cint; name: cstring; value: cstring): ptr AgSymT {.
     importc: "agattr", dynlib: cgraphDll.}
-proc agattrsym*(obj: pointer; name: cstring): ptr Agsym_t {.importc: "agattrsym",
+proc agAttrSym*(obj: pointer; name: cstring): ptr AgSymT {.importc: "agattrsym",
     dynlib: cgraphDll.}
-proc agnxtattr*(g: ptr Agraph_t; kind: cint; attr: ptr Agsym_t): ptr Agsym_t {.
+proc agNxtAttr*(g: ptr AGraphT; kind: cint; attr: ptr AgSymT): ptr AgSymT {.
     importc: "agnxtattr", dynlib: cgraphDll.}
-proc agcopyattr*(oldobj: pointer; newobj: pointer): cint {.importc: "agcopyattr",
+proc agCopyAttr*(oldobj: pointer; newobj: pointer): cint {.importc: "agcopyattr",
     dynlib: cgraphDll.}
-proc agbindrec*(obj: pointer; name: cstring; size: cuint; move_to_front: cint): pointer {.
+proc agBindRec*(obj: pointer; name: cstring; size: cuint; moveTo_front: cint): pointer {.
     importc: "agbindrec", dynlib: cgraphDll.}
-proc aggetrec*(obj: pointer; name: cstring; move_to_front: cint): ptr Agrec_t {.
+proc agGetRec*(obj: pointer; name: cstring; moveTo_front: cint): ptr AgrecT {.
     importc: "aggetrec", dynlib: cgraphDll.}
-proc agdelrec*(obj: pointer; name: cstring): cint {.importc: "agdelrec",
+proc agDelRec*(obj: pointer; name: cstring): cint {.importc: "agdelrec",
     dynlib: cgraphDll.}
-proc aginit*(g: ptr Agraph_t; kind: cint; rec_name: cstring; rec_tize: cint;
-            move_to_front: cint) {.importc: "aginit", dynlib: cgraphDll.}
-proc agclean*(g: ptr Agraph_t; kind: cint; rec_name: cstring) {.importc: "agclean",
+proc agInit*(g: ptr AGraphT; kind: cint; rec_name: cstring; recTize: cint;
+            moveTo_front: cint) {.importc: "aginit", dynlib: cgraphDll.}
+proc agClean*(g: ptr AGraphT; kind: cint; rec_name: cstring) {.importc: "agclean",
     dynlib: cgraphDll.}
-proc agget*(obj: pointer; name: cstring): cstring {.importc: "agget", dynlib: cgraphDll.}
-proc agxget*(obj: pointer; sym: ptr Agsym_t): cstring {.importc: "agxget",
+proc agGet*(obj: pointer; name: cstring): cstring {.importc: "agget", dynlib: cgraphDll.}
+proc agXGet*(obj: pointer; sym: ptr AgSymT): cstring {.importc: "agxget",
     dynlib: cgraphDll.}
 proc agSet*(obj: pointer; name: cstring; value: cstring): cint {.importc: "agset",
     dynlib: cgraphDll.}
-proc agxset*(obj: pointer; sym: ptr Agsym_t; value: cstring): cint {.importc: "agxset",
+proc agXSet*(obj: pointer; sym: ptr AgSymT; value: cstring): cint {.importc: "agxset",
     dynlib: cgraphDll.}
 proc agSafeSet*(obj: pointer; name: cstring; value: cstring; def: cstring): cint {.
     importc: "agsafeset", dynlib: cgraphDll.}
 ##  defintions for subgraphs
 
-proc agsubg*(g: ptr Agraph_t; name: cstring; cflag: cint): ptr Agraph_t {.
+proc agSubG*(g: ptr AGraphT; name: cstring; cflag: cint): ptr AGraphT {.
     importc: "agsubg", dynlib: cgraphDll.}
 ##  constructor
 
-proc agidsubg*(g: ptr Agraph_t; id: IdType; cflag: cint): ptr Agraph_t {.
+proc agIdSubG*(g: ptr AGraphT; id: IdType; cflag: cint): ptr AGraphT {.
     importc: "agidsubg", dynlib: cgraphDll.}
 ##  constructor
 
-proc agfstsubg*(g: ptr Agraph_t): ptr Agraph_t {.importc: "agfstsubg",
+proc agFstSubG*(g: ptr AGraphT): ptr AGraphT {.importc: "agfstsubg",
     dynlib: cgraphDll.}
-proc agnxtsubg*(subg: ptr Agraph_t): ptr Agraph_t {.importc: "agnxtsubg",
+proc agNxtSubG*(subg: ptr AGraphT): ptr AGraphT {.importc: "agnxtsubg",
     dynlib: cgraphDll.}
-proc agparent*(g: ptr Agraph_t): ptr Agraph_t {.importc: "agparent", dynlib: cgraphDll.}
+proc agParent*(g: ptr AGraphT): ptr AGraphT {.importc: "agparent", dynlib: cgraphDll.}
 ##  set cardinality
 
-proc agnnodes*(g: ptr Agraph_t): cint {.importc: "agnnodes", dynlib: cgraphDll.}
-proc agnedges*(g: ptr Agraph_t): cint {.importc: "agnedges", dynlib: cgraphDll.}
-proc agnsubg*(g: ptr Agraph_t): cint {.importc: "agnsubg", dynlib: cgraphDll.}
-proc agdegree*(g: ptr Agraph_t; n: ptr Agnode_t; `in`: cint; `out`: cint): cint {.
+proc agNNodes*(g: ptr AGraphT): cint {.importc: "agnnodes", dynlib: cgraphDll.}
+proc agNEdges*(g: ptr AGraphT): cint {.importc: "agnedges", dynlib: cgraphDll.}
+proc agNSubG*(g: ptr AGraphT): cint {.importc: "agnsubg", dynlib: cgraphDll.}
+proc agDegree*(g: ptr AGraphT; n: ptr AgNodeT; `in`: cint; `out`: cint): cint {.
     importc: "agdegree", dynlib: cgraphDll.}
-proc agcountuniqedges*(g: ptr Agraph_t; n: ptr Agnode_t; `in`: cint; `out`: cint): cint {.
+proc agCountUniqEdges*(g: ptr AGraphT; n: ptr AgNodeT; `in`: cint; `out`: cint): cint {.
     importc: "agcountuniqedges", dynlib: cgraphDll.}
 ##  memory
 
-proc agalloc*(g: ptr Agraph_t; size: csize_t): pointer {.importc: "agalloc",
+proc agAlloc*(g: ptr AGraphT; size: csize_t): pointer {.importc: "agalloc",
     dynlib: cgraphDll.}
-proc agrealloc*(g: ptr Agraph_t; `ptr`: pointer; oldsize: csize_t; size: csize_t): pointer {.
+proc agRealloc*(g: ptr AGraphT; `ptr`: pointer; oldsize: csize_t; size: csize_t): pointer {.
     importc: "agrealloc", dynlib: cgraphDll.}
-proc agfree*(g: ptr Agraph_t; `ptr`: pointer) {.importc: "agfree", dynlib: cgraphDll.}
+proc agFree*(g: ptr AGraphT; `ptr`: pointer) {.importc: "agfree", dynlib: cgraphDll.}
 
 # {.pop.}
 
 type VmMallocT* = object
-# extern struct _vmalloc_s *agheap(Agraph_t * g);
+# extern struct _vmalloc_s *agHeap(AGraphT * g);
 ##  an engineering compromise is a joy forever
-proc agheap*(g: ptr Agraph_t): ptr VmMallocT {.importc: "agheap", dynlib: cgraphDll.}
+proc agHeap*(g: ptr AGraphT): ptr VmMallocT {.importc: "agheap", dynlib: cgraphDll.}
 
 
-proc aginternalmapclearlocalnames*(g: ptr Agraph_t) {.
+proc agInternalmapclearlocalnames*(g: ptr AGraphT) {.
     importc: "aginternalmapclearlocalnames", dynlib: cgraphDll.}
-template agnew*(g, t: untyped): untyped =
-  (cast[ptr t](agalloc(g, sizeof((t)))))
+template agNew*(g, t: untyped): untyped =
+  (cast[ptr t](agAlloc(g, sizeof((t)))))
 
-template agnnew*(g, n, t: untyped): untyped =
-  (cast[ptr t](agalloc(g, (n) * sizeof((t)))))
+template agNnew*(g, n, t: untyped): untyped =
+  (cast[ptr t](agAlloc(g, (n) * sizeof((t)))))
 
 ##  error handling
 
 type
-  Agerrlevel_t* {.size: sizeof(cint).} = enum
+  AgErrLevelT* {.size: sizeof(cint).} = enum
     AGWARN, AGERR, AGMAX, AGPREV
-  Agusererrf* = proc (a1: cstring): cint
+  AgUserErrF* = proc (a1: cstring): cint
 
 
-proc agseterr*(a1: Agerrlevel_t): Agerrlevel_t {.importc: "agseterr",
+proc agSetErr*(a1: AgErrLevelT): AgErrLevelT {.importc: "agseterr",
     dynlib: cgraphDll.}
-proc aglasterr*(): cstring {.importc: "aglasterr", dynlib: cgraphDll.}
-proc agerr*(level: Agerrlevel_t; fmt: cstring): cint {.varargs, importc: "agerr",
+proc agLastErr*(): cstring {.importc: "aglasterr", dynlib: cgraphDll.}
+proc agErr*(level: AgErrLevelT; fmt: cstring): cint {.varargs, importc: "agerr",
     dynlib: cgraphDll.}
-proc agerrorf*(fmt: cstring) {.varargs, importc: "agerrorf", dynlib: cgraphDll.}
-proc agwarningf*(fmt: cstring) {.varargs, importc: "agwarningf", dynlib: cgraphDll.}
-proc agerrors*(): cint {.importc: "agerrors", dynlib: cgraphDll.}
-proc agreseterrors*(): cint {.importc: "agreseterrors", dynlib: cgraphDll.}
-proc agseterrf*(a1: Agusererrf): Agusererrf {.importc: "agseterrf", dynlib: cgraphDll.}
+proc agErrorF*(fmt: cstring) {.varargs, importc: "agerrorf", dynlib: cgraphDll.}
+proc agWarningF*(fmt: cstring) {.varargs, importc: "agwarningf", dynlib: cgraphDll.}
+proc agErrors*(): cint {.importc: "agerrors", dynlib: cgraphDll.}
+proc agResetErrors*(): cint {.importc: "agreseterrors", dynlib: cgraphDll.}
+proc agSetErrF*(a1: AgUserErrF): AgUserErrF {.importc: "agseterrf", dynlib: cgraphDll.}
 ##  data access macros
 ##  this assumes that e[0] is out and e[1] is inedge, see edgepair in edge.c
 
@@ -494,16 +494,16 @@ template AGTAIL*(e: untyped): untyped =
 template AGHEAD*(e: untyped): untyped =
   (AGMKOUT(e).node)
 
-template agtail*(e: untyped): untyped =
+template agTail*(e: untyped): untyped =
   AGTAIL(e)
 
-template aghead*(e: untyped): untyped =
+template agHead*(e: untyped): untyped =
   AGHEAD(e)
 
-template agopp*(e: untyped): untyped =
+template agOpp*(e: untyped): untyped =
   AGOPP(e)
 
-template ageqedge*(e, f: untyped): untyped =
+template agEqedge*(e, f: untyped): untyped =
   (AGMKOUT(e) == AGMKOUT(f))
 
 const
@@ -515,34 +515,34 @@ const
  #   extern* = __declspec(dllimport)
 
 var
-  agDirected* {.importc: "Agdirected", dynlib: cgraphDll.}: Agdesc_t
-  agStrictDirected* {.importc: "Agstrictdirected", dynlib: cgraphDll.}: Agdesc_t
-  agUndirected* {.importc: "Agundirected", dynlib: cgraphDll.}: Agdesc_t
-  agStrictUndirected* {.importc: "Agstrictundirected", dynlib: cgraphDll.}: Agdesc_t
+  agDirected* {.importc: "Agdirected", dynlib: cgraphDll.}: AgDescT
+  agStrictDirected* {.importc: "Agstrictdirected", dynlib: cgraphDll.}: AgDescT
+  agUndirected* {.importc: "Agundirected", dynlib: cgraphDll.}: AgDescT
+  agStrictUndirected* {.importc: "Agstrictundirected", dynlib: cgraphDll.}: AgDescT
 
 ##  fast graphs
 
-proc agflatten*(g: ptr Agraph_t; flag: cint) {.importc: "agflatten", dynlib: cgraphDll.}
+proc agFlatten*(g: ptr AGraphT; flag: cint) {.importc: "agflatten", dynlib: cgraphDll.}
 type
-  Agnoderef_t* = Agsubnode_t
-  Agedgeref_t* = Dtlink_t
+  AgNodeRefT* = AgSubNodeT
+  AgedgerefT* = DtLinkT
 
 template AGHEADPOINTER*(g: untyped): untyped =
-  cast[ptr Agnoderef_t]((g.n_seq.data.hh.head))
+  cast[ptr AgNodeRefT]((g.n_seq.data.hh.head))
 
 template AGRIGHTPOINTER*(rep: untyped): untyped =
-  cast[ptr Agnoderef_t]((if (rep).seq_link.right: (
-      cast[pointer](((rep).seq_link.right)) - offsetof(Agsubnode_t, seq_link)) else: 0))
+  cast[ptr AgNodeRefT]((if (rep).seqLink.right: (
+      cast[pointer](((rep).seqLink.right)) - offsetof(AgSubNodeT, seqLink)) else: 0))
 
 template AGLEFTPOINTER*(rep: untyped): untyped =
-  cast[ptr Agnoderef_t](
-    if (rep).seq_link.hl.left:
-      cast[pointer]((rep).seq_link.hl.left - offsetof(Agsubnode_t, seq_link))
+  cast[ptr AgNodeRefT](
+    if (rep).seqLink.hl.left:
+      cast[pointer]((rep).seqLink.hl.left - offsetof(AgSubNodeT, seqLink))
     else: 0
   )
 
 template FIRSTNREF*(g: untyped): untyped =
-  agflatten(g, 1)
+  agFlatten(g, 1)
   AGHEADPOINTER(g)
 
 template NEXTNREF*(g, rep: untyped): untyped =
@@ -554,7 +554,7 @@ template PREVNREF*(g, rep: untyped): untyped =
   else: AGLEFTPOINTER(rep)
 
 template LASTNREF*(g: untyped): untyped =
-  agflatten(g, 1)
+  agFlatten(g, 1)
   if AGHEADPOINTER(g): AGLEFTPOINTER(AGHEADPOINTER(g))
   else: 0
 
@@ -562,15 +562,15 @@ template NODEOF*(rep: untyped): untyped =
   ((rep).node)
 
 template FIRSTOUTREF*(g, sn: untyped): untyped =
-  agflatten(g, 1)
+  agFlatten(g, 1)
   (sn).out_seq
 
 template LASTOUTREF*(g, sn: untyped): untyped =
-  agflatten(g, 1)
-  cast[ptr Agedgeref_t](dtlast(sn.out_seq))
+  agFlatten(g, 1)
+  cast[ptr AgedgerefT](dtlast(sn.out_seq))
 
 template FIRSTINREF*(g, sn: untyped): untyped =
-  agflatten(g, 1)
+  agFlatten(g, 1)
   (sn).in_seq
 
 template NEXTEREF*(g, rep: untyped): untyped =
@@ -587,5 +587,5 @@ template AGSNMAIN*(sn: untyped): untyped =
 
 template EDGEOF*(sn, rep: untyped): untyped =
   if AGSNMAIN(sn):
-    cast[ptr Agedge_t]((cast[ptr cuchar]((rep)) - offsetof(Agedge_t, seq_link)))
-  else: cast[ptr Dthold_t](rep.obj)
+    cast[ptr AgEdgeT]((cast[ptr cuchar]((rep)) - offsetof(AgEdgeT, seqLink)))
+  else: cast[ptr DtholdT](rep.obj)

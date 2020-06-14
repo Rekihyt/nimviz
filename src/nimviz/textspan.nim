@@ -44,10 +44,10 @@ type
 ##
 
 type
-  textfont_t* {.importc: "textfont_t", header: "graphviz/textspan.h", bycopy.} = object
+  TextFontT* {.importc: "textfont_t", header: "graphviz/textspan.h", bycopy.} = object
     name* {.importc: "name".}: cstring
     color* {.importc: "color".}: cstring
-    postscript_alias* {.importc: "postscript_alias".}: ptr PostscriptAlias
+    postscriptAlias* {.importc: "postscript_alias".}: ptr PostscriptAlias
     size* {.importc: "size".}: cdouble
     flags* {.importc: "flags", bitsize: 7.}: cuint ##  HTML_UL, HTML_IF, HTML_BF, etc.
     cnt* {.importc: "cnt", bitsize: (sizeof(cuint) * 8 - 7).}: cuint ##  reference count
@@ -56,13 +56,13 @@ type
 ##  atomic unit of text emitted using a single htmlfont_t
 
 type
-  textspan_t* {.importc: "textspan_t", header: "graphviz/textspan.h", bycopy.} = object
+  TextSpanT* {.importc: "textspan_t", header: "graphviz/textspan.h", bycopy.} = object
     str* {.importc: "str".}: cstring ##  stored in utf-8
-    font* {.importc: "font".}: ptr textfont_t
+    font* {.importc: "font".}: ptr TextFontT
     layout* {.importc: "layout".}: pointer
-    free_layout* {.importc: "free_layout".}: proc (layout: pointer) ##  FIXME - this is ugly
-    yoffset_layout* {.importc: "yoffset_layout".}: cdouble
-    yoffset_centerline* {.importc: "yoffset_centerline".}: cdouble
+    freeLayout* {.importc: "free_layout".}: proc (layout: pointer) ##  FIXME - this is ugly
+    yOffSetLayout* {.importc: "yoffset_layout".}: cdouble
+    yOffSetCenterLine* {.importc: "yoffset_centerline".}: cdouble
     size* {.importc: "size".}: pointf
     just* {.importc: "just".}: char ##  'l' 'n' 'r'
                                 ##  FIXME

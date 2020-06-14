@@ -12,7 +12,7 @@ const gvcDll* =
       "libcdt.so(|.5)"
 
 const
-  CDT_VERSION* = 20050420
+  cdtVersion* = 20050420
 
 # when defined(_WIN32):
 #   const
@@ -21,97 +21,97 @@ const
 
 ##  for libdict compatibility
 
-type
-  size_t* = uint
-  uint16_t* = uint16
-  int32t* = int32
-  uint8_t* = uint8
 # type
-#   Dtlink_t* = _dtlink_s
+#   size_t* = uint
+#   uint16_t* = uint16
+#   int32t* = int32
+#   uint8_t* = uint8
+
+# type
+#   DtLinkT* = _dtlink_s
 #   Dthold_t* = _dthold_s
-#   Dtdisc_t* = _dtdisc_s
-#   Dtmethod_t* = _dtmethod_s
-#   Dtdata_t* = _dtdata_s
-#   Dt_t* = _dt_s
+#   DtdiscT* = _dtdisc_s
+#   DtmethodT* = _dtmethod_s
+#   DtdataT* = _dtdata_s
+#   DtT* = _dt_s
 #   Dict_t* = _dt_s
 
 ##  structure to hold methods that manipulate an object
 type
-  Dtdisc_t* {.importc: "Dtdisc_t", header: "graphviz/cdt.h", bycopy.} = object
+  DtdiscT* {.importc: "Dtdisc_t", header: "graphviz/cdt.h", bycopy.} = object
     key* {.importc: "key".}: cint ##  where the key begins in an object
     size* {.importc: "size".}: cint ##  key size and type
-    link* {.importc: "link".}: cint ##  offset to Dtlink_t field
-    makef* {.importc: "makef".}: Dtmake_f ##  object constructor
-    freef* {.importc: "freef".}: Dtfree_f ##  object destructor
-    comparf* {.importc: "comparf".}: Dtcompar_f ##  to compare two objects
-    hashf* {.importc: "hashf".}: Dthash_f ##  to compute hash value of an object
-    memoryf* {.importc: "memoryf".}: Dtmemory_f ##  to allocate/free memory
-    eventf* {.importc: "eventf".}: Dtevent_f ##  to process events
+    link* {.importc: "link".}: cint ##  offset to DtLinkT field
+    makef* {.importc: "makef".}: DtmakeF ##  object constructor
+    freef* {.importc: "freef".}: DtfreeF ##  object destructor
+    comparf* {.importc: "comparf".}: DtcomparF ##  to compare two objects
+    hashf* {.importc: "hashf".}: DthashF ##  to compute hash value of an object
+    memoryf* {.importc: "memoryf".}: DtmemoryF ##  to allocate/free memory
+    eventf* {.importc: "eventf".}: DteventF ##  to process events
 
 
-  Dtmemory_f* = proc (a1: ptr Dt_t; a2: pointer; a3: csize_t; a4: ptr Dtdisc_t): pointer
-  Dtsearch_f* = proc (a1: ptr Dt_t; a2: pointer; a3: cint): pointer
-  Dtmake_f* = proc (a1: ptr Dt_t; a2: pointer; a3: ptr Dtdisc_t): pointer
-  Dtfree_f* = proc (a1: ptr Dt_t; a2: pointer; a3: ptr Dtdisc_t)
-  Dtcompar_f* = proc (a1: ptr Dt_t; a2: pointer; a3: pointer; a4: ptr Dtdisc_t): cint
-  Dthash_f* = proc (a1: ptr Dt_t; a2: pointer; a3: ptr Dtdisc_t): cuint
-  Dtevent_f* = proc (a1: ptr Dt_t; a2: cint; a3: pointer; a4: ptr Dtdisc_t): cint
+  DtmemoryF* = proc (a1: ptr DtT; a2: pointer; a3: csize_t; a4: ptr DtdiscT): pointer
+  DtsearchF* = proc (a1: ptr DtT; a2: pointer; a3: cint): pointer
+  DtmakeF* = proc (a1: ptr DtT; a2: pointer; a3: ptr DtdiscT): pointer
+  DtfreeF* = proc (a1: ptr DtT; a2: pointer; a3: ptr DtdiscT)
+  DtcomparF* = proc (a1: ptr DtT; a2: pointer; a3: pointer; a4: ptr DtdiscT): cint
+  DthashF* = proc (a1: ptr DtT; a2: pointer; a3: ptr DtdiscT): cuint
+  DteventF* = proc (a1: ptr DtT; a2: cint; a3: pointer; a4: ptr DtdiscT): cint
 
-  Dtmethod_t* {.importc: "Dtmemory_f", header: "graphviz/cdt.h", bycopy.} = object
-    searchf* {.importc: "searchf".}: Dtsearch_f ##  search function
+  DtmethodT* {.importc: "Dtmemory_f", header: "graphviz/cdt.h", bycopy.} = object
+    searchf* {.importc: "searchf".}: DtsearchF ##  search function
     `type`* {.importc: "type".}: cint ##  type of operation
 
 #                                 ##  for hash dt, > 0: fixed table size
 
 #  stuff that may be in shared memory
 
-  Dtdata_t* {.importc: "DtdataS", header: "graphviz/cdt.h", bycopy.} = object
+  DtdataT* {.importc: "DtdataS", header: "graphviz/cdt.h", bycopy.} = object
     `type`* {.importc: "type".}: cint ##  type of dictionary
-    here* {.importc: "here".}: ptr Dtlink_t ##  finger to last search element
+    here* {.importc: "here".}: ptr DtLinkT ##  finger to last search element
     hh* {.importc: "hh".}: INNER_C_UNION_cdt_66
     ntab* {.importc: "ntab".}: cint ##  number of hash slots
     size* {.importc: "size".}: cint ##  number of objects
     loop* {.importc: "loop".}: cint ##  number of nested loops
     minp* {.importc: "minp".}: cint ##  min path before splay, always even
 
-  Dt_t* {.importc: "Dt_t", header: "graphviz/cdt.h", bycopy.} = object
-    searchf* {.importc: "searchf".}: Dtsearch_f ##  search function
-    disc* {.importc: "disc".}: ptr Dtdisc_t ##  method to manipulate objs
-    data* {.importc: "data".}: ptr Dtdata_t ##  sharable data
-    memoryf* {.importc: "memoryf".}: Dtmemory_f ##  function to alloc/free memory
-    meth* {.importc: "meth".}: ptr Dtmethod_t ##  dictionary method
+  DtT* {.importc: "Dt_t", header: "graphviz/cdt.h", bycopy.} = object
+    searchF* {.importc: "searchf".}: DtsearchF ##  search function
+    disc* {.importc: "disc".}: ptr DtdiscT ##  method to manipulate objs
+    data* {.importc: "data".}: ptr DtdataT ##  sharable data
+    memoryF* {.importc: "memoryf".}: DtmemoryF ##  function to alloc/free memory
+    meth* {.importc: "meth".}: ptr DtmethodT ##  dictionary method
     `type`* {.importc: "type".}: cint ##  type information
-    nview* {.importc: "nview".}: cint ##  number of parent view dictionaries
-    view* {.importc: "view".}: ptr Dt_t ##  next on viewpath
-    walk* {.importc: "walk".}: ptr Dt_t ##  dictionary being walked
+    nView* {.importc: "nview".}: cint ##  number of parent view dictionaries
+    view* {.importc: "view".}: ptr DtT ##  next on viewpath
+    walk* {.importc: "walk".}: ptr DtT ##  dictionary being walked
     user* {.importc: "user".}: pointer ##  for user's usage
-  Dict_t* = Dt_t
+  DictT* = DtT
 
   INNER_C_UNION_cdt_66* {.importc: "no_name", header: "graphviz/cdt.h", bycopy, union.} = object
-    htab* {.importc: "Htab".}: ptr ptr Dtlink_t ##  hash table
-    head* {.importc: "Head".}: ptr Dtlink_t ##  linked list
+    htab* {.importc: "Htab".}: ptr ptr DtLinkT ##  hash table
+    head* {.importc: "Head".}: ptr DtLinkT ##  linked list
 
 
-  Dtlink_t* {.importc: "DtlinkS", header: "graphviz/cdt.h", bycopy.} = object
-    right* {.importc: "right".}: ptr Dtlink_t ##  right child
+  DtLinkT* {.importc: "DtlinkS", header: "graphviz/cdt.h", bycopy.} = object
+    right* {.importc: "right".}: ptr DtLinkT ##  right child
     hl* {.importc: "hl".}: INNER_C_UNION_cdt_44
     
   INNER_C_UNION_cdt_44* {.importc: "no_name", header: "graphviz/cdt.h", bycopy, union.} = object
     hash* {.importc: "Hash".}: cuint ##  hash value
-    left* {.importc: "Left".}: ptr Dtlink_t ##  left child
+    left* {.importc: "Left".}: ptr DtLinkT ##  left child
 
 
   Dthold_t* {.importc: "DtholdS", header: "graphviz/cdt.h", bycopy.} = object
-    hdr* {.importc: "hdr".}: Dtlink_t ##  header
+    hdr* {.importc: "hdr".}: DtLinkT ##  header
     obj* {.importc: "obj".}: pointer ##  user object
 
   Dtstat_t* {.importc: "DtstatS", header: "graphviz/cdt.h", bycopy.} = object
-    dt_meth* {.importc: "dt_meth".}: cint ##  method type
-    dt_tize* {.importc: "dt_tize".}: cint ##  number of elements
-    dt_n* {.importc: "dt_n".}: cint ##  number of chains or levels
-    dt_max* {.importc: "dt_max".}: cint ##  max size of a chain or a level
-    dt_count* {.importc: "dt_count".}: ptr cint ##  counts of chains or levels by size
-
+    dtMeth* {.importc: "dt_meth".}: cint ##  method type
+    dtSize* {.importc: "dt_tize".}: cint ##  number of elements
+    dtN* {.importc: "dt_n".}: cint ##  number of chains or levels
+    dtMax* {.importc: "dt_max".}: cint ##  max size of a chain or a level
+    dtCount* {.importc: "dt_count".}: ptr cint ##  counts of chains or levels by size
 
 
 ##  private structure to hold an object
@@ -194,57 +194,57 @@ const
 # when not defined(_BLD_cdt) and defined(__IMPORT__):
 #   const
 #     extern* = __IMPORT__
-var dtSet* {.importc: "Dtset", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-var dtBag* {.importc: "Dtbag", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-var dtOset* {.importc: "Dtoset", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-var dtObag* {.importc: "Dtobag", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-var dtList* {.importc: "Dtlist", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-var dtStack* {.importc: "Dtstack", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-var dtQueue* {.importc: "Dtqueue", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-var dtDeque* {.importc: "Dtdeque", header: "graphviz/cdt.h".}: ptr Dtmethod_t
+var dtSet* {.importc: "Dtset", header: "graphviz/cdt.h".}: ptr DtmethodT
+var dtBag* {.importc: "Dtbag", header: "graphviz/cdt.h".}: ptr DtmethodT
+var dtOset* {.importc: "Dtoset", header: "graphviz/cdt.h".}: ptr DtmethodT
+var dtObag* {.importc: "Dtobag", header: "graphviz/cdt.h".}: ptr DtmethodT
+var dtList* {.importc: "Dtlist", header: "graphviz/cdt.h".}: ptr DtmethodT
+var dtStack* {.importc: "Dtstack", header: "graphviz/cdt.h".}: ptr DtmethodT
+var dtQueue* {.importc: "Dtqueue", header: "graphviz/cdt.h".}: ptr DtmethodT
+var dtDeque* {.importc: "Dtdeque", header: "graphviz/cdt.h".}: ptr DtmethodT
 
 ##  compatibility stuff; will go away
 
 when not defined(KPVDEL):
-  var dtOrder* {.importc: "Dtorder", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-  var dtTree* {.importc: "Dttree", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-  var dtHash* {.importc: "Dthash", header: "graphviz/cdt.h".}: ptr Dtmethod_t
-  var uscoreDttree* {.importc: "Dttree", header: "graphviz/cdt.h".}: Dtmethod_t
-  var uscoreDthash* {.importc: "Dthash", header: "graphviz/cdt.h".}: Dtmethod_t
-  var uscoreDtlist* {.importc: "Dtlist", header: "graphviz/cdt.h".}: Dtmethod_t
-  var uscoreDtqueue* {.importc: "Dtqueue", header: "graphviz/cdt.h".}: Dtmethod_t
-  var uscoreDtstack* {.importc: "Dtstack", header: "graphviz/cdt.h".}: Dtmethod_t
+  var dtOrder* {.importc: "Dtorder", header: "graphviz/cdt.h".}: ptr DtmethodT
+  var dtTree* {.importc: "Dttree", header: "graphviz/cdt.h".}: ptr DtmethodT
+  var dtHash* {.importc: "Dthash", header: "graphviz/cdt.h".}: ptr DtmethodT
+  var uscoreDttree* {.importc: "Dttree", header: "graphviz/cdt.h".}: DtmethodT
+  var uscoreDthash* {.importc: "Dthash", header: "graphviz/cdt.h".}: DtmethodT
+  var uscoreDtlist* {.importc: "Dtlist", header: "graphviz/cdt.h".}: DtmethodT
+  var uscoreDtqueue* {.importc: "Dtqueue", header: "graphviz/cdt.h".}: DtmethodT
+  var uscoreDtstack* {.importc: "Dtstack", header: "graphviz/cdt.h".}: DtmethodT
 ##  public functions
 
 # when defined(_BLD_cdt) and defined(__EXPORT__):
 #   const
 #     extern* = __EXPORT__
-proc dtopen*(a1: ptr Dtdisc_t; a2: ptr Dtmethod_t): ptr Dt_t {.importc: "dtopen",
+proc dtopen*(a1: ptr DtdiscT; a2: ptr DtmethodT): ptr DtT {.importc: "dtopen",
     dynlib: gvcDll.}
-proc dtclose*(a1: ptr Dt_t): cint {.importc: "dtclose", dynlib: gvcDll.}
-proc dtview*(a1: ptr Dt_t; a2: ptr Dt_t): ptr Dt_t {.importc: "dtview", dynlib: gvcDll.}
-proc dtdisc*(dt: ptr Dt_t; a2: ptr Dtdisc_t; a3: cint): ptr Dtdisc_t {.importc: "dtdisc",
+proc dtclose*(a1: ptr DtT): cint {.importc: "dtclose", dynlib: gvcDll.}
+proc dtview*(a1: ptr DtT; a2: ptr DtT): ptr DtT {.importc: "dtview", dynlib: gvcDll.}
+proc dtdisc*(dt: ptr DtT; a2: ptr DtdiscT; a3: cint): ptr DtdiscT {.importc: "dtdisc",
     dynlib: gvcDll.}
-proc dtmethod*(a1: ptr Dt_t; a2: ptr Dtmethod_t): ptr Dtmethod_t {.importc: "dtmethod",
+proc dtmethod*(a1: ptr DtT; a2: ptr DtmethodT): ptr DtmethodT {.importc: "dtmethod",
     dynlib: gvcDll.}
-proc dtflatten*(a1: ptr Dt_t): ptr Dtlink_t {.importc: "dtflatten", dynlib: gvcDll.}
-proc dtextract*(a1: ptr Dt_t): ptr Dtlink_t {.importc: "dtextract", dynlib: gvcDll.}
-proc dtrestore*(a1: ptr Dt_t; a2: ptr Dtlink_t): cint {.importc: "dtrestore",
+proc dtflatten*(a1: ptr DtT): ptr DtLinkT {.importc: "dtflatten", dynlib: gvcDll.}
+proc dtextract*(a1: ptr DtT): ptr DtLinkT {.importc: "dtextract", dynlib: gvcDll.}
+proc dtrestore*(a1: ptr DtT; a2: ptr DtLinkT): cint {.importc: "dtrestore",
     dynlib: gvcDll.}
-proc dttreeset*(a1: ptr Dt_t; a2: cint; a3: cint): cint {.importc: "dttreeset",
+proc dttreeset*(a1: ptr DtT; a2: cint; a3: cint): cint {.importc: "dttreeset",
     dynlib: gvcDll.}
-proc dtwalk*(a1: ptr Dt_t; a2: proc (a1: ptr Dt_t; a2: pointer; a3: pointer): cint;
+proc dtwalk*(a1: ptr DtT; a2: proc (a1: ptr DtT; a2: pointer; a3: pointer): cint;
             a3: pointer): cint {.importc: "dtwalk", dynlib: gvcDll.}
-proc dtrenew*(a1: ptr Dt_t; a2: pointer): pointer {.importc: "dtrenew", dynlib: gvcDll.}
-proc dtsize*(a1: ptr Dt_t): cint {.importc: "dtsize", dynlib: gvcDll.}
-proc dtstat*(a1: ptr Dt_t; a2: ptr Dtstat_t; a3: cint): cint {.importc: "dtstat",
+proc dtrenew*(a1: ptr DtT; a2: pointer): pointer {.importc: "dtrenew", dynlib: gvcDll.}
+proc dtsize*(a1: ptr DtT): cint {.importc: "dtsize", dynlib: gvcDll.}
+proc dtstat*(a1: ptr DtT; a2: ptr Dtstat_t; a3: cint): cint {.importc: "dtstat",
     dynlib: gvcDll.}
 proc dtstrhash*(a1: cuint; a2: pointer; a3: cint): cuint {.importc: "dtstrhash",
     dynlib: gvcDll.}
 ##  internal functions for translating among holder, object and key
 
 # template _DT*(dt: untyped): untyped =
-#   (cast[ptr Dt_t]((dt)))
+#   (cast[ptr DtT]((dt)))
 
 # template _DTDSC*(dc, ky, sz, lk, cmpf: untyped): untyped =
 #   (
@@ -254,7 +254,7 @@ proc dtstrhash*(a1: cuint; a2: pointer; a3: cint): cuint {.importc: "dtstrhash",
 #     cmpf = dc.comparf)
 
 # template _DTLNK*(o, lk: untyped): untyped =
-#   (cast[ptr Dtlink_t]((cast[cstring]((o)) + lk)))
+#   (cast[ptr DtLinkT]((cast[cstring]((o)) + lk)))
 
 # template _DTOBJ*(e, lk: untyped): untyped =
 #   (if lk < 0: (cast[ptr Dthold_t]((e))).obj else: cast[pointer]((
@@ -274,12 +274,12 @@ proc dtstrhash*(a1: cuint; a2: pointer; a3: cint): cuint {.importc: "dtstrhash",
 
 # template _DTMTCH*(dt, key, action: untyped): void =
 #   while true:
-#     var _e: ptr Dtlink_t
+#     var _e: ptr DtLinkT
 #     var
 #       _o: pointer
 #       _k: pointer
 #       _key: pointer
-#     var _dc: ptr Dtdisc_t
+#     var _dc: ptr DtdiscT
 #     var
 #       _ky: cint
 #       _tz: cint
@@ -302,12 +302,12 @@ proc dtstrhash*(a1: cuint; a2: pointer; a3: cint): cuint {.importc: "dtstrhash",
 
 # template _DTSRCH*(dt, obj, action: untyped): void =
 #   while true:
-#     var _e: ptr Dtlink_t
+#     var _e: ptr DtLinkT
 #     var
 #       _o: pointer
 #       _k: pointer
 #       _key: pointer
-#     var _dc: ptr Dtdisc_t
+#     var _dc: ptr DtdiscT
 #     var
 #       _ky: cint
 #       _tz: cint
@@ -344,7 +344,7 @@ proc dtstrhash*(a1: cuint; a2: pointer; a3: cint): cuint {.importc: "dtstrhash",
 #   (_DT(d).walk)
 
 # template dtlink*(d, e: untyped): untyped =
-#   ((cast[ptr Dtlink_t]((e))).right)
+#   ((cast[ptr DtLinkT]((e))).right)
 
 # template dtobj*(d, e: untyped): untyped =
 #   _DTOBJ((e), _DT(d).disc.link)
@@ -398,7 +398,7 @@ proc dtstrhash*(a1: cuint; a2: pointer; a3: cint): cuint {.importc: "dtstrhash",
 #   (_DT(d).`type` and DT_FOUND)
 
 const
-  DT_PRIME* = 17109811
+  dtPrime* = 17109811
 
 # template dtcharhash*(h, c: untyped): untyped =
 #   ((cast[cuint]((h)) + cast[cuint]((c))) * DT_PRIME)

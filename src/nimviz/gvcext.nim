@@ -48,9 +48,9 @@ type api_t* {.importc, header: "graphviz/gvcext.h", bycopy.}= enum
 
 # import gvcjob
 type
-  GVJ_t* {.importc: "GVJ_t", header: "graphviz/gvcext.h", bycopy.} = object
-  GVG_t* {.importc: "GVG_t", header: "graphviz/gvcext.h", bycopy.} = object
-  GVC_t* {.importc: "GVC_t", header: "graphviz/gvcext.h", bycopy.} = object
+  GVJT* {.importc: "GVJ_t", header: "graphviz/gvcext.h", bycopy.} = object
+  GVGT* {.importc: "GVG_t", header: "graphviz/gvcext.h", bycopy.} = object
+  GVCT* {.importc: "GVC_t", header: "graphviz/gvcext.h", bycopy.} = object
   gvplugin_available_t* {.importc: "gvplugin_available_t", header: "graphviz/gvcext.h", bycopy.} = object
 
 type
