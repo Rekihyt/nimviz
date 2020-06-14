@@ -7,21 +7,31 @@ The debian package for them is libgraphviz-dev.
 
 ## Examples
 
-Basic graph opening and closing and render
+Basic graph opening and closing and render.
+You can quickly view output using fim:
+```bash
+nimble build; ./binary | dot -Tjpg | fim -i --autowindow
+```
 
 ```nim
 import nimviz
+
 var
-  graph = agopen("G", agDirected, nil)
-  gvc = gvContext()
-  node = graph.agnode("node1", 1)
+  graph = agOpen("G", agDirected, nil)
+  context = gvContext()
+  node1 = graph.agNode("node1", 1)
+  node2 = graph.agNode("node2", 1)
+  # Create an edge
+  edge1 = graph.agEdge(node1, node2, "edge1", 1)
 
-let f = open("graph.gv")
-var g = agread(f, nil);
+# Set an attribute
+discard agSafeSet(node2, "color", "green", "")
 
-echo gvLayout(gvc, graph, "dot")
-echo gvRender(gvc, graph, "plain", cast[ptr File](stdout))
+discard gvLayout(context, graph, "fdp")
+discard gvRender(context, graph, "dot", cast[ptr File](stdout))
 
-echo gvFreeLayout(gvc, graph)
-echo gvFreeContext(gvc)
+discard gvFreeLayout(context, graph)
+discard agClose(graph)
+discard gvFreeContext(context)
 ```
+

@@ -34,7 +34,7 @@ when not defined(NIL):
 ##  #define NILsym			NIL(Agsym_t*)
 
 type
-  IDTYPE* = cuint
+  IdType* = cuint
 
 
 ##  Header of a user record.  These records are attached by client programs
@@ -61,7 +61,7 @@ type
     mtflock* {.importc: "mtflock", bitsize: 1.}: cuint ##  move-to-front lock, see above
     attrwf* {.importc: "attrwf", bitsize: 1.}: cuint ##  attrs written (parity, write.c)
     seq* {.importc: "seq", bitsize: (sizeof(cuint) * 8 - 4).}: cuint ##  sequence no.
-    id* {.importc: "id".}: IDTYPE ##  client  ID
+    id* {.importc: "id".}: IdType ##  client  ID
 
 
 ##  object tags
@@ -113,8 +113,8 @@ type
     node* {.importc: "node".}: ptr Agnode_t ##  the object
     in_id* {.importc: "in_id".}: ptr Dtlink_t
     out_id* {.importc: "out_id".}: ptr Dtlink_t ##  by node/ID for random access
-    in_teq* {.importc: "in_teq".}: ptr Dtlink_t
-    out_teq* {.importc: "out_teq".}: ptr Dtlink_t ##  by node/sequence for serial access
+    in_seq* {.importc: "in_seq".}: ptr Dtlink_t
+    out_seq* {.importc: "out_seq".}: ptr Dtlink_t ##  by node/sequence for serial access
 
   Agnode_t* {.importc: "Agnode_t", header: "graphviz/cgraph.h", bycopy.} = object
     base* {.importc: "base".}: Agobj_t
@@ -157,10 +157,10 @@ type
     open* {.importc: "open".}: proc (g: ptr Agraph_t; a2: ptr Agdisc_t): pointer ##  object ID allocator
     ##  associated with a graph
     map* {.importc: "map".}: proc (state: pointer; objtype: cint; str: cstring;
-                               id: ptr IDTYPE; createflag: cint): clong
-    alloc* {.importc: "alloc".}: proc (state: pointer; objtype: cint; id: IDTYPE): clong
-    free* {.importc: "free".}: proc (state: pointer; objtype: cint; id: IDTYPE)
-    print* {.importc: "print".}: proc (state: pointer; objtype: cint; id: IDTYPE): cstring
+                               id: ptr IdType; createflag: cint): clong
+    alloc* {.importc: "alloc".}: proc (state: pointer; objtype: cint; id: IdType): clong
+    free* {.importc: "free".}: proc (state: pointer; objtype: cint; id: IdType)
+    print* {.importc: "print".}: proc (state: pointer; objtype: cint; id: IdType): cstring
     close* {.importc: "close".}: proc (state: pointer)
     idregister* {.importc: "idregister".}: proc (state: pointer; objtype: cint;
         obj: pointer)
@@ -248,9 +248,9 @@ type
     base* {.importc: "base".}: Agobj_t
     desc* {.importc: "desc".}: Agdesc_t
     link* {.importc: "link".}: Dtlink_t
-    n_teq* {.importc: "n_teq".}: ptr Dict_t ##  the node set in sequence
+    n_seq* {.importc: "n_seq".}: ptr Dict_t ##  the node set in sequence
     n_id* {.importc: "n_id".}: ptr Dict_t ##  the node set indexed by ID
-    e_teq* {.importc: "e_teq".}: ptr Dict_t
+    e_seq* {.importc: "e_seq".}: ptr Dict_t
     e_id* {.importc: "e_id".}: ptr Dict_t ##  holders for edge sets
     g_dict* {.importc: "g_dict".}: ptr Dict_t ##  subgraphs - descendants
     parent* {.importc: "parent".}: ptr Agraph_t
@@ -265,99 +265,99 @@ var agDefaultDisc* {.importc: "AgDefaultDisc", header: "graphviz/cgraph.h".}: Ag
 
 # {.push dynlib: cgraphDll.}
 
-proc agpushdisc*(g: ptr Agraph_t; disc: ptr Agcbdisc_t; state: pointer) {.
+proc agPushDisc*(g: ptr Agraph_t; disc: ptr Agcbdisc_t; state: pointer) {.
     importc: "agpushdisc", dynlib: cgraphDll.}
-proc agpopdisc*(g: ptr Agraph_t; disc: ptr Agcbdisc_t): cint {.importc: "agpopdisc",
+proc agPopDisc*(g: ptr Agraph_t; disc: ptr Agcbdisc_t): cint {.importc: "agpopdisc",
     dynlib: cgraphDll.}
-proc agcallbacks*(g: ptr Agraph_t; flag: cint): cint {.importc: "agcallbacks",
+proc agCallBacks*(g: ptr Agraph_t; flag: cint): cint {.importc: "agcallbacks",
     dynlib: cgraphDll.}
 ##  return prev value
 ##  graphs
 
-proc agopen*(name: cstring; desc: Agdesc_t; disc: ptr Agdisc_t): ptr Agraph_t {.
+proc agOpen*(name: cstring; desc: Agdesc_t; disc: ptr Agdisc_t): ptr Agraph_t {.
     importc: "agopen", dynlib: cgraphDll.}
-proc agclose*(g: ptr Agraph_t): cint {.importc: "agclose", dynlib: cgraphDll.}
-proc agread*(chan: pointer; disc: ptr Agdisc_t): ptr Agraph_t {.importc: "agread",
+proc agClose*(g: ptr Agraph_t): cint {.importc: "agclose", dynlib: cgraphDll.}
+proc agRead*(chan: pointer; disc: ptr Agdisc_t): ptr Agraph_t {.importc: "agread",
     dynlib: cgraphDll.}
-proc agmemread*(cp: cstring): ptr Agraph_t {.importc: "agmemread", dynlib: cgraphDll.}
-proc agreadline*(a1: cint) {.importc: "agreadline", dynlib: cgraphDll.}
-proc agsetfile*(a1: cstring) {.importc: "agsetfile", dynlib: cgraphDll.}
-proc agconcat*(g: ptr Agraph_t; chan: pointer; disc: ptr Agdisc_t): ptr Agraph_t {.
+proc agMemRead*(cp: cstring): ptr Agraph_t {.importc: "agmemread", dynlib: cgraphDll.}
+proc agReadLine*(a1: cint) {.importc: "agreadline", dynlib: cgraphDll.}
+proc agSetFile*(a1: cstring) {.importc: "agsetfile", dynlib: cgraphDll.}
+proc agConcat*(g: ptr Agraph_t; chan: pointer; disc: ptr Agdisc_t): ptr Agraph_t {.
     importc: "agconcat", dynlib: cgraphDll.}
-proc agwrite*(g: ptr Agraph_t; chan: pointer): cint {.importc: "agwrite",
+proc agWrite*(g: ptr Agraph_t; chan: pointer): cint {.importc: "agwrite",
     dynlib: cgraphDll.}
-proc agisdirected*(g: ptr Agraph_t): cint {.importc: "agisdirected", dynlib: cgraphDll.}
-proc agisundirected*(g: ptr Agraph_t): cint {.importc: "agisundirected",
+proc agIsDirected*(g: ptr Agraph_t): cint {.importc: "agisdirected", dynlib: cgraphDll.}
+proc agIsUndirected*(g: ptr Agraph_t): cint {.importc: "agisundirected",
     dynlib: cgraphDll.}
-proc agisstrict*(g: ptr Agraph_t): cint {.importc: "agisstrict", dynlib: cgraphDll.}
-proc agissimple*(g: ptr Agraph_t): cint {.importc: "agissimple", dynlib: cgraphDll.}
+proc agIsStrict*(g: ptr Agraph_t): cint {.importc: "agisstrict", dynlib: cgraphDll.}
+proc agIsSimple*(g: ptr Agraph_t): cint {.importc: "agissimple", dynlib: cgraphDll.}
 ##  nodes
 
-proc agnode*(g: ptr Agraph_t; name: cstring; createflag: cint): ptr Agnode_t {.
+proc agNode*(g: ptr Agraph_t; name: cstring; createflag: cint): ptr Agnode_t {.
     importc: "agnode", dynlib: cgraphDll.}
-proc agidnode*(g: ptr Agraph_t; id: IDTYPE; createflag: cint): ptr Agnode_t {.
+proc agIdNode*(g: ptr Agraph_t; id: IdType; createflag: cint): ptr Agnode_t {.
     importc: "agidnode", dynlib: cgraphDll.}
-proc agsubnode*(g: ptr Agraph_t; n: ptr Agnode_t; createflag: cint): ptr Agnode_t {.
+proc agSubNode*(g: ptr Agraph_t; n: ptr Agnode_t; createflag: cint): ptr Agnode_t {.
     importc: "agsubnode", dynlib: cgraphDll.}
-proc agfstnode*(g: ptr Agraph_t): ptr Agnode_t {.importc: "agfstnode",
+proc agFstNode*(g: ptr Agraph_t): ptr Agnode_t {.importc: "agfstnode",
     dynlib: cgraphDll.}
-proc agnxtnode*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agnode_t {.importc: "agnxtnode",
+proc agNxtNode*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agnode_t {.importc: "agnxtnode",
     dynlib: cgraphDll.}
-proc aglstnode*(g: ptr Agraph_t): ptr Agnode_t {.importc: "aglstnode",
+proc agLstNode*(g: ptr Agraph_t): ptr Agnode_t {.importc: "aglstnode",
     dynlib: cgraphDll.}
-proc agprvnode*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agnode_t {.importc: "agprvnode",
+proc agPvNode*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agnode_t {.importc: "agprvnode",
     dynlib: cgraphDll.}
-proc agsubrep*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agsubnode_t {.importc: "agsubrep",
+proc agSubRep*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agsubnode_t {.importc: "agsubrep",
     dynlib: cgraphDll.}
-proc agnodebefore*(u: ptr Agnode_t; v: ptr Agnode_t): cint {.importc: "agnodebefore",
+proc agNodeBefore*(u: ptr Agnode_t; v: ptr Agnode_t): cint {.importc: "agnodebefore",
     dynlib: cgraphDll.}
 ##  we have no shame
 ##  and neither do we
 ##  edges
 
-proc agedge*(g: ptr Agraph_t; t: ptr Agnode_t; h: ptr Agnode_t; name: cstring;
+proc agEdge*(g: ptr Agraph_t; t: ptr Agnode_t; h: ptr Agnode_t; name: cstring;
             createflag: cint): ptr Agedge_t {.importc: "agedge", dynlib: cgraphDll.}
-proc agidedge*(g: ptr Agraph_t; t: ptr Agnode_t; h: ptr Agnode_t; id: IDTYPE;
+proc agIdEdge*(g: ptr Agraph_t; t: ptr Agnode_t; h: ptr Agnode_t; id: IdType;
               createflag: cint): ptr Agedge_t {.importc: "agidedge",
     dynlib: cgraphDll.}
-proc agsubedge*(g: ptr Agraph_t; e: ptr Agedge_t; createflag: cint): ptr Agedge_t {.
+proc agSubEdge*(g: ptr Agraph_t; e: ptr Agedge_t; createflag: cint): ptr Agedge_t {.
     importc: "agsubedge", dynlib: cgraphDll.}
-proc agfstin*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstin",
+proc agFstIn*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstin",
     dynlib: cgraphDll.}
-proc agnxtin*(g: ptr Agraph_t; e: ptr Agedge_t): ptr Agedge_t {.importc: "agnxtin",
+proc agNxtIn*(g: ptr Agraph_t; e: ptr Agedge_t): ptr Agedge_t {.importc: "agnxtin",
     dynlib: cgraphDll.}
-proc agfstout*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstout",
+proc agFstOut*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstout",
     dynlib: cgraphDll.}
-proc agnxtout*(g: ptr Agraph_t; e: ptr Agedge_t): ptr Agedge_t {.importc: "agnxtout",
+proc agNxtOut*(g: ptr Agraph_t; e: ptr Agedge_t): ptr Agedge_t {.importc: "agnxtout",
     dynlib: cgraphDll.}
-proc agfstedge*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstedge",
+proc agFstEdge*(g: ptr Agraph_t; n: ptr Agnode_t): ptr Agedge_t {.importc: "agfstedge",
     dynlib: cgraphDll.}
-proc agnxtedge*(g: ptr Agraph_t; e: ptr Agedge_t; n: ptr Agnode_t): ptr Agedge_t {.
+proc agNxtEdge*(g: ptr Agraph_t; e: ptr Agedge_t; n: ptr Agnode_t): ptr Agedge_t {.
     importc: "agnxtedge", dynlib: cgraphDll.}
 ##  generic
 
-proc agraphof*(obj: pointer): ptr Agraph_t {.importc: "agraphof", dynlib: cgraphDll.}
-proc agroot*(obj: pointer): ptr Agraph_t {.importc: "agroot", dynlib: cgraphDll.}
-proc agcontains*(a1: ptr Agraph_t; a2: pointer): cint {.importc: "agcontains",
+proc agraphOf*(obj: pointer): ptr Agraph_t {.importc: "agraphof", dynlib: cgraphDll.}
+proc agRoot*(obj: pointer): ptr Agraph_t {.importc: "agroot", dynlib: cgraphDll.}
+proc agContains*(a1: ptr Agraph_t; a2: pointer): cint {.importc: "agcontains",
     dynlib: cgraphDll.}
-proc agnameof*(a1: pointer): cstring {.importc: "agnameof", dynlib: cgraphDll.}
-proc agrelabel*(obj: pointer; name: cstring): cint {.importc: "agrelabel",
+proc agNameOf*(a1: pointer): cstring {.importc: "agnameof", dynlib: cgraphDll.}
+proc agRelabel*(obj: pointer; name: cstring): cint {.importc: "agrelabel",
     dynlib: cgraphDll.}
 ##  scary
 
-proc agrelabel_node*(n: ptr Agnode_t; newname: cstring): cint {.
+proc agRelabel_node*(n: ptr Agnode_t; newname: cstring): cint {.
     importc: "agrelabel_node", dynlib: cgraphDll.}
-proc agdelete*(g: ptr Agraph_t; obj: pointer): cint {.importc: "agdelete",
+proc agDelete*(g: ptr Agraph_t; obj: pointer): cint {.importc: "agdelete",
     dynlib: cgraphDll.}
-proc agdelsubg*(g: ptr Agraph_t; sub: ptr Agraph_t): clong {.importc: "agdelsubg",
+proc agDelSubG*(g: ptr Agraph_t; sub: ptr Agraph_t): clong {.importc: "agdelsubg",
     dynlib: cgraphDll.}
 ##  could be agclose
 
-proc agdelnode*(g: ptr Agraph_t; arg_n: ptr Agnode_t): cint {.importc: "agdelnode",
+proc agDelNode*(g: ptr Agraph_t; arg_n: ptr Agnode_t): cint {.importc: "agdelnode",
     dynlib: cgraphDll.}
-proc agdeledge*(g: ptr Agraph_t; arg_e: ptr Agedge_t): cint {.importc: "agdeledge",
+proc agDelEdge*(g: ptr Agraph_t; arg_e: ptr Agedge_t): cint {.importc: "agdeledge",
     dynlib: cgraphDll.}
-proc agobjkind*(a1: pointer): cint {.importc: "agobjkind", dynlib: cgraphDll.}
+proc agObjKind*(a1: pointer): cint {.importc: "agobjkind", dynlib: cgraphDll.}
 ##  strings
 
 proc agstrdup*(a1: ptr Agraph_t; a2: cstring): cstring {.importc: "agstrdup",
@@ -398,11 +398,11 @@ proc agclean*(g: ptr Agraph_t; kind: cint; rec_name: cstring) {.importc: "agclea
 proc agget*(obj: pointer; name: cstring): cstring {.importc: "agget", dynlib: cgraphDll.}
 proc agxget*(obj: pointer; sym: ptr Agsym_t): cstring {.importc: "agxget",
     dynlib: cgraphDll.}
-proc agset*(obj: pointer; name: cstring; value: cstring): cint {.importc: "agset",
+proc agSet*(obj: pointer; name: cstring; value: cstring): cint {.importc: "agset",
     dynlib: cgraphDll.}
 proc agxset*(obj: pointer; sym: ptr Agsym_t; value: cstring): cint {.importc: "agxset",
     dynlib: cgraphDll.}
-proc agsafeset*(obj: pointer; name: cstring; value: cstring; def: cstring): cint {.
+proc agSafeSet*(obj: pointer; name: cstring; value: cstring; def: cstring): cint {.
     importc: "agsafeset", dynlib: cgraphDll.}
 ##  defintions for subgraphs
 
@@ -410,7 +410,7 @@ proc agsubg*(g: ptr Agraph_t; name: cstring; cflag: cint): ptr Agraph_t {.
     importc: "agsubg", dynlib: cgraphDll.}
 ##  constructor
 
-proc agidsubg*(g: ptr Agraph_t; id: IDTYPE; cflag: cint): ptr Agraph_t {.
+proc agidsubg*(g: ptr Agraph_t; id: IdType; cflag: cint): ptr Agraph_t {.
     importc: "agidsubg", dynlib: cgraphDll.}
 ##  constructor
 
@@ -514,13 +514,6 @@ const
  # const
  #   extern* = __declspec(dllimport)
 
-# Original desc
-#  var
-#   agdirected* {.importc: "Agdirected", header: "graphviz/cgraph.h".}: Agdesc_t
-#   agstrictdirected* {.importc: "Agstrictdirected", header: "graphviz/cgraph.h".}: Agdesc_t
-#   agundirected* {.importc: "Agundirected", header: "graphviz/cgraph.h".}: Agdesc_t
-#   agstrictundirected* {.importc: "Agstrictundirected", header: "graphviz/cgraph.h".}: Agdesc_t
-
 var
   agDirected* {.importc: "Agdirected", dynlib: cgraphDll.}: Agdesc_t
   agStrictDirected* {.importc: "Agstrictdirected", dynlib: cgraphDll.}: Agdesc_t
@@ -535,7 +528,7 @@ type
   Agedgeref_t* = Dtlink_t
 
 template AGHEADPOINTER*(g: untyped): untyped =
-  cast[ptr Agnoderef_t]((g.n_teq.data.hh.head))
+  cast[ptr Agnoderef_t]((g.n_seq.data.hh.head))
 
 template AGRIGHTPOINTER*(rep: untyped): untyped =
   cast[ptr Agnoderef_t]((if (rep).seq_link.right: (
@@ -570,15 +563,15 @@ template NODEOF*(rep: untyped): untyped =
 
 template FIRSTOUTREF*(g, sn: untyped): untyped =
   agflatten(g, 1)
-  (sn).out_teq
+  (sn).out_seq
 
 template LASTOUTREF*(g, sn: untyped): untyped =
   agflatten(g, 1)
-  cast[ptr Agedgeref_t](dtlast(sn.out_teq))
+  cast[ptr Agedgeref_t](dtlast(sn.out_seq))
 
 template FIRSTINREF*(g, sn: untyped): untyped =
   agflatten(g, 1)
-  (sn).in_teq
+  (sn).in_seq
 
 template NEXTEREF*(g, rep: untyped): untyped =
   (rep).right
