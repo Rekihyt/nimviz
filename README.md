@@ -17,7 +17,7 @@ nimble build; ./binary | dot -Tjpg | fim -i --autowindow
 import nimviz
 
 var
-  graph = agOpen("G", agDirected, nil)
+  graph = agOpen("G", agDirected)
   context = gvContext()
   node1 = graph.agNode("node1")
   node2 = graph.agNode("node2")
@@ -25,7 +25,7 @@ var
   edge1 = graph.agEdge(node1, node2, "edge1")
 
 # Set an attribute
-discard agSafeSet(node2, "color", "green", "")
+discard node2.agSafeSet("color", "green")
 
 discard gvLayout(context, graph, "fdp")
 discard gvRender(context, graph, "dot", cast[ptr File](stdout))

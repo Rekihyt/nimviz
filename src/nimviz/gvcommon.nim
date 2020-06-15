@@ -12,17 +12,17 @@
 import gvcext
 
 type
-  GVCOMMON_t* {.importc: "GVCOMMON_t", header: "graphviz/gvcommon.h", bycopy.} = object
+  GVCOMMONT* {.importc: "GVCOMMON_t", header: "graphviz/gvcommon.h", bycopy.} = object
     info* {.importc: "info".}: cstringArray
-    cmdname* {.importc: "cmdname".}: cstring
+    cmdName* {.importc: "cmdname".}: cstring
     verbose* {.importc: "verbose".}: cint
     config* {.importc: "config".}: bool
-    auto_outfile_names* {.importc: "auto_outfile_names".}: bool
-    errorfn* {.importc: "errorfn".}: proc (fmt: cstring) {.varargs.}
-    show_boxes* {.importc: "show_boxes".}: cstringArray ##  emit code for correct box coordinates
+    autoOutfileNames* {.importc: "auto_outfile_names".}: bool
+    errorFn* {.importc: "errorfn".}: proc (fmt: cstring) {.varargs.}
+    showBoxes* {.importc: "show_boxes".}: cstringArray ##  emit code for correct box coordinates
     lib* {.importc: "lib".}: cstringArray ##  rendering state
     viewNum* {.importc: "viewNum".}: cint ##  current view - 1 based count of views,
                                       ## 			    all pages in all layers
-    builtins* {.importc: "builtins".}: ptr LtSymlistT
-    demand_loading* {.importc: "demand_loading".}: cint
+    builtIns* {.importc: "builtins".}: ptr LtSymlistT
+    demandLoading* {.importc: "demand_loading".}: cint
 

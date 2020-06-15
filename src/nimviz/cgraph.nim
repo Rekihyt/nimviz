@@ -277,7 +277,7 @@ proc agCallBacks*(g: ptr AGraphT; flag: cint): cint {.importc: "agcallbacks",
 proc agOpen*(name: cstring; desc: AgDescT; disc: ptr AgDiscT): ptr AGraphT {.
     importc: "agopen", dynlib: cgraphDll.}
 proc agClose*(g: ptr AGraphT): cint {.importc: "agclose", dynlib: cgraphDll.}
-proc agRead*(chan: pointer; disc: ptr AgDiscT): ptr AGraphT {.importc: "agread",
+proc agRead*(chan: pointer; disc: ptr AgDiscT = nil): ptr AGraphT {.importc: "agread",
     dynlib: cgraphDll.}
 proc agMemRead*(cp: cstring): ptr AGraphT {.importc: "agmemread", dynlib: cgraphDll.}
 proc agReadLine*(a1: cint) {.importc: "agreadline", dynlib: cgraphDll.}
@@ -402,7 +402,7 @@ proc agSet*(obj: pointer; name: cstring; value: cstring): cint {.importc: "agset
     dynlib: cgraphDll.}
 proc agXSet*(obj: pointer; sym: ptr AgSymT; value: cstring): cint {.importc: "agxset",
     dynlib: cgraphDll.}
-proc agSafeSet*(obj: pointer; name: cstring; value: cstring; def: cstring): cint {.
+proc agSafeSet*(obj: pointer; name: cstring; value: cstring; def: cstring = ""): cint {.
     importc: "agsafeset", dynlib: cgraphDll.}
 ##  defintions for subgraphs
 
