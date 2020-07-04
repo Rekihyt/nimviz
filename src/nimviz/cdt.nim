@@ -66,7 +66,7 @@ type
 
 #  stuff that may be in shared memory
 
-  DtdataT* {.importc: "DtdataS", header: "graphviz/cdt.h", bycopy.} = object
+  DtdataT* {.importc: "Dtdata_t", header: "graphviz/cdt.h", bycopy.} = object
     `type`* {.importc: "type".}: cint ##  type of dictionary
     here* {.importc: "here".}: ptr DtLinkT ##  finger to last search element
     hh* {.importc: "hh".}: INNER_C_UNION_cdt_66
@@ -88,27 +88,27 @@ type
     user* {.importc: "user".}: pointer ##  for user's usage
   DictT* = DtT
 
-  INNER_C_UNION_cdt_66* {.importc: "no_name", header: "graphviz/cdt.h", bycopy, union.} = object
+  INNER_C_UNION_cdt_66* {.importc: "Dtdata_t", header: "graphviz/cdt.h", bycopy, union.} = object
     htab* {.importc: "Htab".}: ptr ptr DtLinkT ##  hash table
     head* {.importc: "Head".}: ptr DtLinkT ##  linked list
 
-
-  DtLinkT* {.importc: "DtlinkS", header: "graphviz/cdt.h", bycopy.} = object
-    right* {.importc: "right".}: ptr DtLinkT ##  right child
-    hl* {.importc: "hl".}: INNER_C_UNION_cdt_44
-    
-  INNER_C_UNION_cdt_44* {.importc: "no_name", header: "graphviz/cdt.h", bycopy, union.} = object
+  INNER_C_UNION_cdt_44* {.importc: "Dtlink_t", header: "graphviz/cdt.h", bycopy, union.} = object
     hash* {.importc: "Hash".}: cuint ##  hash value
     left* {.importc: "Left".}: ptr DtLinkT ##  left child
 
+  DtLinkT* {.importc: "Dtlink_t", header: "graphviz/cdt.h", bycopy.} = object
+    right* {.importc: "right".}: ptr DtLinkT ##  right child
+    hl* {.importc: "hl".}: INNER_C_UNION_cdt_44
+    
 
-  Dthold_t* {.importc: "DtholdS", header: "graphviz/cdt.h", bycopy.} = object
+
+  DtholdT* {.importc: "Dthold_t", header: "graphviz/cdt.h", bycopy.} = object
     hdr* {.importc: "hdr".}: DtLinkT ##  header
     obj* {.importc: "obj".}: pointer ##  user object
 
-  Dtstat_t* {.importc: "DtstatS", header: "graphviz/cdt.h", bycopy.} = object
+  DtstatT* {.importc: "Dtstat_t", header: "graphviz/cdt.h", bycopy.} = object
     dtMeth* {.importc: "dt_meth".}: cint ##  method type
-    dtSize* {.importc: "dt_tize".}: cint ##  number of elements
+    dtSize* {.importc: "dt_size".}: cint ##  number of elements
     dtN* {.importc: "dt_n".}: cint ##  number of chains or levels
     dtMax* {.importc: "dt_max".}: cint ##  max size of a chain or a level
     dtCount* {.importc: "dt_count".}: ptr cint ##  counts of chains or levels by size
