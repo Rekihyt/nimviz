@@ -35,3 +35,5 @@ discard agClose(graph)
 discard gvFreeContext(context)
 ```
 
+## Not Working
+Any nested structures, such as DtLinkT and their dependencies.
